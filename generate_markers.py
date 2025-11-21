@@ -10,8 +10,8 @@ def generate_markers():
     marker_0 = cv2.aruco.generateImageMarker(dictionary, 0, 1000)
     marker_1 = cv2.aruco.generateImageMarker(dictionary, 1, 1000)
 
-    cv2.imwrite("marker_0.png", marker_0)
-    cv2.imwrite("marker_1.png", marker_1)
+    cv2.imwrite("./resources/marker_0.png", marker_0)
+    cv2.imwrite("./resources/marker_1.png", marker_1)
 
     print("Markers saved as marker_0.png and marker_1.png")
     print("OPEN THEM IN WORD/DOCS AND RESIZE TO EXACTLY 10cm x 10cm BEFORE PRINTING.")

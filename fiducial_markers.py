@@ -130,4 +130,3 @@ class FiducialMarker(object):
                     frame_dict[int(marker_id[0])] = rvec, tvec, current_corners
 
         return frame_dict
-
