@@ -2,17 +2,17 @@ import os
 from typing import Any
 
 import cv2
-import stag
 import numpy as np
-from cv2 import Mat
-from numpy import ndarray, dtype
 
 
 # move STag tracker logic into a class
 class FiducialMarker(object):
     def __init__(self, marker_size_cm, calibration_file="calibration_data.npz"):
-        self.libraryHD = 21 # STag library HD21
-        self.marker_size = marker_size_cm # Physical size of the printed marker
+        self.dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        self.parameters = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.dictionary, self.parameters)
+
+        self.marker_size = marker_size_cm
         self.calibration_file = calibration_file
 
         # Load calibration if it exists, otherwise, we are uncalibrated
@@ -45,7 +45,6 @@ class FiducialMarker(object):
         # Logic for cv2.findChessboardCorners goes here
         object_points = []
         image_points = []
-        image_size = 0
         frame_dimensions = None
 
         # Hardcoded dimensions for the inner corners of the checkerboard
@@ -62,7 +61,6 @@ class FiducialMarker(object):
         for frame in frames:
             grey_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame_dimensions = grey_frame.shape[1], grey_frame.shape[0]
-
             found, corners = cv2.findChessboardCorners(grey_frame, (columns, rows), None)
 
             if found:
@@ -77,11 +75,15 @@ class FiducialMarker(object):
             distCoeffs = None
         )
 
-        np.savez(self.calibration_file, camera_matrix = self.camera_matrix, distortion_coefficients = self.distortion_coefficients)
-        self.is_calibrated = True
+        np.savez(self.calibration_file,
+                 camera_matrix = self.camera_matrix,
+                 distortion_coefficients = self.distortion_coefficients
+                 )
 
-    def detect_marker_pose(self, frame) -> tuple[bool, ndarray | Any, ndarray | Any, Any] | tuple[
-        bool, None, None, None]:
+        self.is_calibrated = True
+        print("Calibration saved to", self.calibration_file)
+
+    def detect_marker_pose(self, frame) -> dict[Any, Any] | None:
         """
         Input: Current video frame
         Action: Detects STag, uses self.matrix to solve PnP
@@ -89,8 +91,10 @@ class FiducialMarker(object):
         :param frame:
         :return:
         """
-        # In OpenCV, y-axis is DOWN (POSITIVE y-values are DOWN, NEGATIVE y-values are UP)
-        #   Expected point layout is clockwise: [top_left, top_right, bottom_right, bottom_left]
+        frame_dict = {}
+
+        # 1. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
+        # ArUco default corner order: TL, TR, BR, BL
         top_left_point = (0, 0, 0)
         top_right_point = (self.marker_size, 0, 0)
         bottom_right_point = (self.marker_size, self.marker_size, 0)
@@ -98,12 +102,32 @@ class FiducialMarker(object):
 
         marker_object_points = np.array(
             [top_left_point, top_right_point, bottom_right_point, bottom_left_point],
-            dtype=np.float32)
+            dtype=np.float32
+        )
 
-        frame_corners, frame_ids, _ = stag.detectMarkers(image=frame, libraryHD=self.libraryHD)
+        # 2. Detect Markers using ArUco
+        # Convert to grayscale for better detection speed/accuracy
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejected = self.detector.detectMarkers(gray_frame)
 
-        if len(frame_ids) > 0:
-            success, rvec, tvec = cv2.solvePnP(marker_object_points, frame_corners[0], self.camera_matrix, self.distortion_coefficients)
-            return success, rvec, tvec, frame_ids[0]
+        # 3. If markers found, solve PnP for each
+        if ids is not None and len(ids) > 0:
+            for i, marker_id in enumerate(ids):
+                # current_corners shape is (1, 4, 2)
+                current_corners = corners[i]
 
-        return False, None, None, None
+                # Solve Perspective-n-Point to find pose
+                success, rvec, tvec = cv2.solvePnP(
+                    marker_object_points,
+                    current_corners,
+                    self.camera_matrix,
+                    self.distortion_coefficients
+                )
+
+                if success:
+                    # Return format matches Main.py expectation:
+                    # { ID : (Rotation Vector, Translation Vector, 2D Corners) }
+                    frame_dict[int(marker_id[0])] = rvec, tvec, current_corners
+
+        return frame_dict
+
