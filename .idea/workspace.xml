@@ -4,24 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)">
-      <change afterPath="$PROJECT_DIR$/distance_measure/facial_tracker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/distance_measure/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/distance_measure/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/body_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/body_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/facial_tracker.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fiducial_markers.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/fiducial_markers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_markers.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/generate_markers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00000.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00000.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00001.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00001.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00002.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00002.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00003.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00003.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00004.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00004.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/00005.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00005.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/pattern.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/pattern.png" afterDir="false" />
-    </list>
+    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="commit to avoid merge conflict" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,6 +19,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -165,7 +149,7 @@
       <workItem from="1764272951976" duration="162000" />
       <workItem from="1764273128059" duration="330000" />
       <workItem from="1764273470170" duration="428000" />
-      <workItem from="1764273910158" duration="9645000" />
+      <workItem from="1764273910158" duration="10004000" />
     </task>
     <task id="LOCAL-00001" summary="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)">
       <option name="closed" value="true" />
@@ -199,7 +183,39 @@
       <option name="project" value="LOCAL" />
       <updated>1764236974962</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="added distance measure fallbacks (try markers, lose markers track face, lose face track shoulders)&#10;&#10;move all code for this program into distance_measure subfolder to prepare for head/face tracking from Michael repo">
+      <option name="closed" value="true" />
+      <created>1764284637253</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1764284637253</updated>
+    </task>
+    <task id="LOCAL-00006" summary="clean main.py">
+      <option name="closed" value="true" />
+      <created>1764284688590</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1764284688590</updated>
+    </task>
+    <task id="LOCAL-00007" summary="commit to avoid merge conflict">
+      <option name="closed" value="true" />
+      <created>1764284760099</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1764284760099</updated>
+    </task>
+    <task id="LOCAL-00008" summary="commit to avoid merge conflict">
+      <option name="closed" value="true" />
+      <created>1764284784775</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1764284784775</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -210,10 +226,13 @@
     <MESSAGE value="moved calibration process into new main.py&#10;&#10;added generate_markers.py to create ArUco markers&#10;&#10;corrected fiducial_markers.py to use ArUco instead of STag (ArUco built into OpenCV; STag causes crashes on MacOS due to memory issues)" />
     <MESSAGE value="refactored main to move body tracking into body_tracker.py&#10;&#10;draw body rectangle over subject and display current distance as determined via focal length in main.py" />
     <MESSAGE value="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)" />
-    <option name="LAST_COMMIT_MESSAGE" value="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)" />
+    <MESSAGE value="added distance measure fallbacks (try markers, lose markers track face, lose face track shoulders)&#10;&#10;move all code for this program into distance_measure subfolder to prepare for head/face tracking from Michael repo" />
+    <MESSAGE value="clean main.py" />
+    <MESSAGE value="commit to avoid merge conflict" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit to avoid merge conflict" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764284458122" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764284818445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$body_tracker.coverage" NAME="body_tracker Coverage Results" MODIFIED="1764237124739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$mathematics.coverage" NAME="mathematics Coverage Results" MODIFIED="1763672299662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1763776184436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
