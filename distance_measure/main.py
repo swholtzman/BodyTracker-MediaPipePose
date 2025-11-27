@@ -9,8 +9,6 @@ import time
 import cvzone
 import numpy as np
 
-from cvzone.FaceMeshModule import FaceMeshDetector
-from body_tracker import BodyTracker
 
 class Main(object):
     def __init__(self):
