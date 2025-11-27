@@ -5,14 +5,14 @@ import cv2
 import numpy as np
 import stag
 
+
 if not hasattr(stag, "detectMarkers"):
     raise ImportError(
         "Incorrect 'stag' library detected. "
         "Please run 'pip uninstall stag' and 'pip install stag-python'."
     )
-# -------------------------
 
-# move STag tracker logic into a class
+
 class FiducialMarker(object):
     def __init__(self, marker_size_cm, calibration_file="calibration_data.npz"):
         """
@@ -60,10 +60,18 @@ class FiducialMarker(object):
         :param frames:
         :return:
         """
+        # Safety check: If no frames, we cannot calibrate.
+        # This fixes the "frame_dimensions might be None" warning.
+        if not frames:
+            print("Calibration failed: No frames provided.")
+            return
+
         # Logic for cv2.findChessboardCorners goes here
         object_points = []
         image_points = []
-        frame_dimensions = None
+
+        # Initialize with a default to silence PyCharm, though the loop below overwrites it
+        frame_dimensions = (frames[0].shape[1], frames[0].shape[0])
 
         # Prepare the object points: (0,0,0), (1,0,0), (2,0,0) ... (8,5,0)
         #   Initialize a matrix of zeros with shape (Total Points, 3 coordinates)
@@ -73,14 +81,27 @@ class FiducialMarker(object):
         object_point_structure[:, :2] = np.mgrid[0:self.CHECKERBOARD_COLS, 0:self.CHECKERBOARD_ROWS].T.reshape(-1, 2)
 
         for frame in frames:
+            # Check if frame is valid
+            if frame is None:
+                continue
+
             grey_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame_dimensions = grey_frame.shape[1], grey_frame.shape[0]
-            found, corners = cv2.findChessboardCorners(grey_frame, (self.CHECKERBOARD_COLS, self.CHECKERBOARD_ROWS),
-                                                       None)
+
+            found, corners = cv2.findChessboardCorners(
+                grey_frame,
+                (self.CHECKERBOARD_COLS, self.CHECKERBOARD_ROWS),
+                None
+            )
 
             if found:
                 object_points.append(object_point_structure)
                 image_points.append(corners)
+
+        # [FIX 2] Ensure we actually found corners before running the math
+        if not object_points:
+            print("Calibration failed: Checkerboard not detected in any frame.")
+            return
 
         ret, self.camera_matrix, self.distortion_coefficients, rvectors, tvectors = cv2.calibrateCamera(
             object_points, # list of 3D points ("Answer Key")
@@ -108,7 +129,17 @@ class FiducialMarker(object):
         """
         frame_dict = {}
 
-        # 1. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
+        # 1. Convert to Grayscale (STag requires 1 channel)
+        if len(frame.shape) == 3:
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        else:
+            gray_frame = frame
+
+        # 2. Force Contiguous Memory (C++ requires strict memory layout)
+        # This prevents the SIGSEGV (Exit Code 139)
+        gray_frame = np.ascontiguousarray(gray_frame)
+
+        # 3. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
         # ArUco default corner order: TL, TR, BR, BL
         top_left_point = (0, 0, 0)
         top_right_point = (self.marker_size, 0, 0)
@@ -120,18 +151,14 @@ class FiducialMarker(object):
             dtype=np.float32
         )
 
-        # 2. Detect Markers using STag
+        # 4. Detect Markers using STag
         try:
-            corners, ids, rejected = stag.detectMarkers(image=frame, libraryHD=self.libraryHD)
+            corners, ids, rejected = stag.detectMarkers(image=gray_frame, libraryHD=self.libraryHD)
         except Exception as e:
             print(f"STag Error: {e}")
             return frame_dict
 
-        # if ids is not None:
-        #     print("STag detected")
-        #     print(corners, ids, rejected)
-
-        # 3. If markers found, solve PnP for each
+        # 5. If markers found, solve PnP for each
         if ids is not None and len(ids) > 0:
             for i, marker_id_arr in enumerate(ids):
                 marker_id = int(marker_id_arr[0])  # Extract ID from array

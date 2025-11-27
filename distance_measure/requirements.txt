@@ -1,0 +1,10 @@
+# Use the newest version of Numpy 1.x (Stable on M1/M2/M3)
+numpy<2
+
+# Use the last OpenCV version that supports Numpy 1.x
+opencv-python<=4.10.0.84
+
+# Keep your other tools
+mediapipe>=0.10.14
+cvzone
+stag-python
