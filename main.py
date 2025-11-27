@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import time
 import cvzone
@@ -14,49 +16,117 @@ class Main(object):
         self.markers = FiducialMarker(marker_size_cm=10.0)
         self.camera = cv2.VideoCapture(0)
 
-        # Standard average human shoulder width in cm
-        # self.AVG_SHOULDER_WIDTH_CM = 45.0
-
-        # Sam's shoulder width (for testing)
-        self.AVG_SHOULDER_WIDTH_CM = 50
-
     def calibrate_lens(self):
         """
+        Automated "Hold Still" calibration process.
 
         :return:
         """
         calibration_frames = []
+        REQUIRED_FRAMES = 15
+        HOLD_TIME = 3.0  # Seconds to hold still
+        MOVEMENT_THRESHOLD = 3.0  # Max pixel movement allowed to be considered "still"
+
         print("Entering Lens Calibration Mode...")
+
+        # State variables for the automation
+        last_corners = None
+        stability_start_time = None
+        last_capture_time = 0
 
         while not self.markers.is_calibrated:
             success, frame = self.camera.read()
-
             if not success:
-                print("Failed to read from camera")
                 break
 
-            # UI: Tell the user what to do
-            cvzone.putTextRect(frame, f"LENS CALIBRATION MODE", (50, 50), scale=2, thickness=2)
-            cvzone.putTextRect(frame, f"Frames Captured: {len(calibration_frames)}", (50, 100), scale=2,
-                               thickness=2)
-            cvzone.putTextRect(frame, "Press 'c' to capture, 'q' to compute, 'esc' to skip", (50, 150), scale=1,
-                               thickness=1)
+            display_frame = frame.copy()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            cv2.imshow('Facial Tracker', frame)
-            key_pressed = cv2.waitKey(1) & 0xFF
+            # 1. Look for Checkerboard
+            found, corners = cv2.findChessboardCorners(
+                gray,
+                (self.markers.CHECKERBOARD_COLS, self.markers.CHECKERBOARD_ROWS),
+                None
+            )
 
-            if key_pressed == ord('c'):
-                print(f"Captured frame for camera calibration")
-                calibration_frames.append(frame)
-            elif key_pressed == ord('q'):
-                print(f"Initiating calibration with {len(calibration_frames)} frames")
-                if calibration_frames:
-                    self.markers.run_checkerboard_calibration(calibration_frames)
+            instruction_text = "Searching for Checkerboard..."
+            box_color = (0, 0, 255)  # Red by default
+
+            if found:
+                # Draw the corners so user knows it's detected
+                cv2.drawChessboardCorners(display_frame,
+                                          (self.markers.CHECKERBOARD_COLS, self.markers.CHECKERBOARD_ROWS),
+                                          corners, found)
+
+                # 2. Check Stability
+                is_stable = False
+                if last_corners is not None:
+                    # Calculate how much the board moved since last frame (Euclidean distance of corner 0)
+                    movement = np.linalg.norm(corners[0] - last_corners[0])
+
+                    if movement < MOVEMENT_THRESHOLD:
+                        is_stable = True
+                    else:
+                        is_stable = False
+                        stability_start_time = None  # Reset timer if moved
+
+                last_corners = corners
+
+                # 3. Handle Timer
+                if is_stable:
+                    if stability_start_time is None:
+                        stability_start_time = time.time()
+
+                    elapsed = time.time() - stability_start_time
+                    countdown = math.ceil(HOLD_TIME - elapsed)
+
+                    if elapsed >= HOLD_TIME:
+                        # --- CAPTURE! ---
+                        calibration_frames.append(frame)
+                        print(f"Captured frame {len(calibration_frames)}/{REQUIRED_FRAMES}")
+
+                        # Visual Flash effect
+                        cv2.rectangle(display_frame, (0, 0), (frame.shape[1], frame.shape[0]), (255, 255, 255),
+                                      cv2.FILLED)
+
+                        # Force a pause so they have to move it to a new angle
+                        stability_start_time = None
+                        last_corners = None  # Reset stability check
+                        time.sleep(0.5)
+                    else:
+                        # Countdown UI
+                        instruction_text = f"HOLD STILL: {countdown}"
+                        box_color = (0, 255, 255)  # Yellow
+
+                        # Draw a progress bar or shrinking circle
+                        cv2.circle(display_frame, (50, 50), 30, (0, 255, 255), 2)
+                        cv2.circle(display_frame, (50, 50), int(30 * (elapsed / HOLD_TIME)), (0, 255, 255), -1)
+
                 else:
-                    print("No calibration frames detected. Calibration aborted.")
+                    instruction_text = "Stabilizing..."
+
+            # 4. Check Completion
+            if len(calibration_frames) >= REQUIRED_FRAMES:
+                cvzone.putTextRect(display_frame, "CALCULATING...", (50, 200), scale=3, thickness=3)
+                cv2.imshow('Facial Tracker', display_frame)
+                cv2.waitKey(100)
+
+                self.markers.run_checkerboard_calibration(calibration_frames)
                 break
-            elif key_pressed == 27:
-                print("Skipping Lens Calibration (Distance tracking will be inaccurate)")
+
+            # UI Overlay
+            cvzone.putTextRect(display_frame, f"Calibration: {len(calibration_frames)}/{REQUIRED_FRAMES}", (50, 50),
+                               scale=2, thickness=2)
+            cvzone.putTextRect(display_frame, instruction_text, (50, 100), scale=2, thickness=2, colorR=box_color)
+
+            # Helper text
+            if len(calibration_frames) > 0 and not found:
+                cvzone.putTextRect(display_frame, "Move board to new angle", (50, 150), scale=1, thickness=1)
+
+            cv2.imshow('Facial Tracker', display_frame)
+            key_pressed = cv2.waitKey(1) & 0xFF
+            if key_pressed == 27:  # ESC
+                print("Skipping Lens Calibration")
                 break
 
         print("Lens Calibration Complete")
@@ -82,7 +152,7 @@ class Main(object):
                           (int(center_pixel[0] + 100), int(center_pixel[1] + 100)),
                           (0, 255, 0), 3)
 
-            cvzone.putTextRect(frame, "ALIGN ArUco MARKER", (50, 50), scale=2, thickness=2)
+            cvzone.putTextRect(frame, "ALIGN STag MARKER", (50, 50), scale=2, thickness=2)
 
             marker_results = self.markers.detect_marker_pose(frame)
             if marker_results:
@@ -150,14 +220,67 @@ class Main(object):
 
         print("Distance Calibration Complete!")
 
+    # def run(self):
+    #     # 1. Lens Calibration (Get the focal length)
+    #     if not self.markers.is_calibrated:
+    #         self.calibrate_lens()
+    #
+    #     # 2. Distance Calibration (Get the Focal Length)
+    #     focal_length = self.calibrate_distance()
+    #     print(f"Using Focal Length: {focal_length}")
+    #
+    #     # 3. Main Body Tracking Loop
+    #     while True:
+    #         success, frame = self.camera.read()
+    #         if not success:
+    #             print("Failed to read from camera")
+    #             break
+    #
+    #         height, width, _ = frame.shape
+    #
+    #         # --- BODY TRACKING ---
+    #         # 1. Get Landmarks
+    #         pose_landmarks = self.body_tracker.detect_body(frame)
+    #
+    #         if pose_landmarks:
+    #             # 2. Ask Tracker for Measurements
+    #             shoulder_width_px = self.body_tracker.get_shoulder_width_pixels(pose_landmarks, width, height)
+    #             bbox = self.body_tracker.get_bounding_box(pose_landmarks, width, height)
+    #
+    #             # 3. Calculate Distance
+    #             if shoulder_width_px > 0:
+    #                 distance_cm = (self.AVG_SHOULDER_WIDTH_CM * focal_length) / shoulder_width_px
+    #             else:
+    #                 distance_cm = 0
+    #
+    #             # 4. Draw UI
+    #             if bbox:
+    #                 x_min, y_min, x_max, y_max = bbox
+    #                 cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+    #
+    #                 cvzone.putTextRect(
+    #                     img=frame,
+    #                     text=f"Body: {int(distance_cm)}cm",
+    #                     pos=(x_min, y_min - 20),
+    #                     scale=2,
+    #                     thickness=2,
+    #                     colorR=(0, 255, 0),
+    #                     colorT=(0, 0, 0)
+    #                 )
+    #
+    #         cv2.imshow('Facial Tracker', frame)
+    #         if cv2.waitKey(1) & 0xFF == ord('q'):
+    #             break
+    #
+    #     self.camera.release()
+    #     cv2.destroyAllWindows()
+
     def run(self):
-        # 1. Lens Calibration (Get the focal length)
+        # 1. Lens Calibration (Get the camera matrix/dist coefficients)
         if not self.markers.is_calibrated:
             self.calibrate_lens()
 
-        # 2. Distance Calibration (Get the Focal Length)
-        focal_length = self.calibrate_distance()
-        print(f"Using Focal Length: {focal_length}")
+        print("Tracking started. Align STag marker on chest for distance.")
 
         # 3. Main Body Tracking Loop
         while True:
@@ -167,34 +290,49 @@ class Main(object):
                 break
 
             height, width, _ = frame.shape
+            distance_cm = 0
+            marker_detected = False
+
+            # --- MARKER TRACKING (Priority for Distance) ---
+            marker_results = self.markers.detect_marker_pose(frame)
+            if marker_results:
+                # We assume the first detected marker is the one on the chest
+                # In a multi-marker setup, you would filter by specific ID here
+                first_marker_id = list(marker_results.keys())[0]
+                rvec, tvec, corners = marker_results[first_marker_id]
+
+                # tvec[2] is the Z-axis translation (Distance)
+                distance_cm = tvec[2][0]
+                marker_detected = True
+
+                # Optional: Visual Debug for Marker
+                pts = corners.reshape((-1, 1, 2)).astype(np.int32)
+                cv2.polylines(frame, [pts], True, (255, 0, 255), 2)
 
             # --- BODY TRACKING ---
-            # 1. Get Landmarks
             pose_landmarks = self.body_tracker.detect_body(frame)
 
             if pose_landmarks:
-                # 2. Ask Tracker for Measurements
-                shoulder_width_px = self.body_tracker.get_shoulder_width_pixels(pose_landmarks, width, height)
                 bbox = self.body_tracker.get_bounding_box(pose_landmarks, width, height)
-
-                # 3. Calculate Distance
-                if shoulder_width_px > 0:
-                    distance_cm = (self.AVG_SHOULDER_WIDTH_CM * focal_length) / shoulder_width_px
-                else:
-                    distance_cm = 0
 
                 # 4. Draw UI
                 if bbox:
                     x_min, y_min, x_max, y_max = bbox
-                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+
+                    # Color feedback: Green if marker locked, Yellow if Body only
+                    box_color = (0, 255, 0) if marker_detected else (0, 255, 255)
+
+                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), box_color, 3)
+
+                    display_text = f"Dist: {int(distance_cm)}cm" if marker_detected else "No Marker"
 
                     cvzone.putTextRect(
                         img=frame,
-                        text=f"Body: {int(distance_cm)}cm",
+                        text=display_text,
                         pos=(x_min, y_min - 20),
                         scale=2,
                         thickness=2,
-                        colorR=(0, 255, 0),
+                        colorR=box_color,
                         colorT=(0, 0, 0)
                     )
 

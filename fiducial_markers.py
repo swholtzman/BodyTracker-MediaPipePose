@@ -3,14 +3,28 @@ from typing import Any
 
 import cv2
 import numpy as np
+import stag
 
+if not hasattr(stag, "detectMarkers"):
+    raise ImportError(
+        "Incorrect 'stag' library detected. "
+        "Please run 'pip uninstall stag' and 'pip install stag-python'."
+    )
+# -------------------------
 
 # move STag tracker logic into a class
 class FiducialMarker(object):
     def __init__(self, marker_size_cm, calibration_file="calibration_data.npz"):
-        self.dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-        self.parameters = cv2.aruco.DetectorParameters()
-        self.detector = cv2.aruco.ArucoDetector(self.dictionary, self.parameters)
+        """
+
+        :param marker_size_cm:
+        :param calibration_file:
+        """
+        self.libraryHD = 23  # STag library HD23
+
+        # --- Expose Checkerboard Dimensions for Main.py ---
+        self.CHECKERBOARD_ROWS = 6
+        self.CHECKERBOARD_COLS = 9
 
         self.marker_size = marker_size_cm
         self.calibration_file = calibration_file
@@ -25,6 +39,10 @@ class FiducialMarker(object):
             self.is_calibrated = False
 
     def load_calibration(self):
+        """
+
+        :return:
+        """
         # Extra redundancy for safety
         if not os.path.exists(self.calibration_file):
             print("calibration file does not exist")
@@ -47,21 +65,18 @@ class FiducialMarker(object):
         image_points = []
         frame_dimensions = None
 
-        # Hardcoded dimensions for the inner corners of the checkerboard
-        rows = 6
-        columns = 9
-
         # Prepare the object points: (0,0,0), (1,0,0), (2,0,0) ... (8,5,0)
         #   Initialize a matrix of zeros with shape (Total Points, 3 coordinates)
-        object_point_structure = np.zeros((rows * columns, 3), np.float32)
+        object_point_structure = np.zeros((self.CHECKERBOARD_ROWS * self.CHECKERBOARD_COLS, 3), np.float32)
 
         # Fill the X and Y columns using mgrid, keeping Z as zero
-        object_point_structure[:, :2] = np.mgrid[0:columns, 0:rows].T.reshape(-1, 2)
+        object_point_structure[:, :2] = np.mgrid[0:self.CHECKERBOARD_COLS, 0:self.CHECKERBOARD_ROWS].T.reshape(-1, 2)
 
         for frame in frames:
             grey_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame_dimensions = grey_frame.shape[1], grey_frame.shape[0]
-            found, corners = cv2.findChessboardCorners(grey_frame, (columns, rows), None)
+            found, corners = cv2.findChessboardCorners(grey_frame, (self.CHECKERBOARD_COLS, self.CHECKERBOARD_ROWS),
+                                                       None)
 
             if found:
                 object_points.append(object_point_structure)
@@ -105,16 +120,28 @@ class FiducialMarker(object):
             dtype=np.float32
         )
 
-        # 2. Detect Markers using ArUco
-        # Convert to grayscale for better detection speed/accuracy
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejected = self.detector.detectMarkers(gray_frame)
+        # 2. Detect Markers using STag
+        try:
+            corners, ids, rejected = stag.detectMarkers(image=frame, libraryHD=self.libraryHD)
+        except Exception as e:
+            print(f"STag Error: {e}")
+            return frame_dict
+
+        # if ids is not None:
+        #     print("STag detected")
+        #     print(corners, ids, rejected)
 
         # 3. If markers found, solve PnP for each
         if ids is not None and len(ids) > 0:
-            for i, marker_id in enumerate(ids):
-                # current_corners shape is (1, 4, 2)
-                current_corners = corners[i]
+            for i, marker_id_arr in enumerate(ids):
+                marker_id = int(marker_id_arr[0])  # Extract ID from array
+
+                # current_corners comes as shape (1, 4, 2) or (4, 2) depending on version
+                current_corners = np.array(corners[i], dtype=np.float32)
+
+                # Ensure shape is correct for solvePnP (needs to be list of points)
+                if current_corners.shape == (1, 4, 2):
+                    current_corners = current_corners.reshape(4, 2)
 
                 # Solve Perspective-n-Point to find pose
                 success, rvec, tvec = cv2.solvePnP(
@@ -125,8 +152,9 @@ class FiducialMarker(object):
                 )
 
                 if success:
-                    # Return format matches Main.py expectation:
-                    # { ID : (Rotation Vector, Translation Vector, 2D Corners) }
-                    frame_dict[int(marker_id[0])] = rvec, tvec, current_corners
+                    # Store results.
+                    # Reshape corners to (1, 4, 2) to match the format Main.py expects for polylines
+                    reshaped_corners = current_corners.reshape(1, 4, 2)
+                    frame_dict[marker_id] = rvec, tvec, reshaped_corners
 
         return frame_dict

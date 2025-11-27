@@ -5,7 +5,7 @@ from cvzone.FaceMeshModule import FaceMeshDetector
 # pixel_width
 # distance
 # object_width
-
+#
 class FacialTracker(object):
     def __init__(self):
         pass
