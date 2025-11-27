@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)">
+      <change afterPath="$PROJECT_DIR$/distance_measure/facial_tracker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/distance_measure/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/distance_measure/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/body_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/body_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/facial_tracker.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fiducial_markers.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/fiducial_markers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generate_markers.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/generate_markers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00000.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00000.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00001.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00001.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00002.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00002.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00003.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00003.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00004.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00004.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/00005.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/00005.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/pattern.png" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/resources/pattern.png" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;swholtzman&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/swholtzman/BodyTracker-MediaPipePose.git&quot;,
+    &quot;accountId&quot;: &quot;c60da361-9bb7-4eb4-bce7-930330178241&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="35iIbO7F0tSUNosulf769ViWogs" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.body_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.facial_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fiducial_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mathematics.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.38174602&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/resources" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/distance_measure" />
+      <recent name="$PROJECT_DIR$/resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="body_tracker" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="BodyTracker-MediaPipePose" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (PyCharmMiscProject)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/distance_measure/body_tracker.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="BodyTracker-MediaPipePose" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/distance_measure/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.178" />
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="" />
+      <created>1763586536313</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763586536313</updated>
+      <workItem from="1763586537585" duration="56086000" />
+      <workItem from="1764234768946" duration="3041000" />
+      <workItem from="1764237821244" duration="1113000" />
+      <workItem from="1764272951976" duration="162000" />
+      <workItem from="1764273128059" duration="330000" />
+      <workItem from="1764273470170" duration="428000" />
+      <workItem from="1764273910158" duration="9645000" />
+    </task>
+    <task id="LOCAL-00001" summary="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)">
+      <option name="closed" value="true" />
+      <created>1763682754655</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1763682754655</updated>
+    </task>
+    <task id="LOCAL-00002" summary="moved calibration process into new main.py&#10;&#10;added generate_markers.py to create ArUco markers&#10;&#10;corrected fiducial_markers.py to use ArUco instead of STag (ArUco built into OpenCV; STag causes crashes on MacOS due to memory issues)">
+      <option name="closed" value="true" />
+      <created>1763713571546</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763713571546</updated>
+    </task>
+    <task id="LOCAL-00003" summary="refactored main to move body tracking into body_tracker.py&#10;&#10;draw body rectangle over subject and display current distance as determined via focal length in main.py">
+      <option name="closed" value="true" />
+      <created>1763720503743</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1763720503743</updated>
+    </task>
+    <task id="LOCAL-00004" summary="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)">
+      <option name="closed" value="true" />
+      <created>1764236974962</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1764236974962</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)" />
+    <MESSAGE value="moved calibration process into new main.py&#10;&#10;added generate_markers.py to create ArUco markers&#10;&#10;corrected fiducial_markers.py to use ArUco instead of STag (ArUco built into OpenCV; STag causes crashes on MacOS due to memory issues)" />
+    <MESSAGE value="refactored main to move body tracking into body_tracker.py&#10;&#10;draw body rectangle over subject and display current distance as determined via focal length in main.py" />
+    <MESSAGE value="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)" />
+    <option name="LAST_COMMIT_MESSAGE" value="reverted to STag markers for better detection and robustness&#10;removed unnecessary calibration with green box in favour of diatance auto-detection supported by STag library&#10;Automated checkerboard calibration to prompt users to hold the board still over 15 auto-captured frames&#10;generate markers file now gives instructions on how to download STag markers from the STag Google Drive&#10;altered requirements.txt to remove stag and import stag-python (two distinct libraries)" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764284458122" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$body_tracker.coverage" NAME="body_tracker Coverage Results" MODIFIED="1764237124739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$mathematics.coverage" NAME="mathematics Coverage Results" MODIFIED="1763672299662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1763776184436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$generate_markers.coverage" NAME="generate_markers Coverage Results" MODIFIED="1763775649113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$facial_tracker.coverage" NAME="facial_tracker Coverage Results" MODIFIED="1763762554978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
