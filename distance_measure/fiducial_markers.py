@@ -135,9 +135,22 @@ class FiducialMarker(object):
         else:
             gray_frame = frame
 
+        # --- SAFETY PADDING ---
+        # The STag library (C++) crashes (SIGSEGV) if edge detection hits the
+        #   exact memory boundary of the image.
+        #   Add a 10px black border so the algorithm hits "safe" pixels
+        #       instead of invalid memory.
+        padding = 10
+        padded_frame = cv2.copyMakeBorder(
+            gray_frame,
+            padding, padding, padding, padding,
+            cv2.BORDER_CONSTANT,
+            value=0
+        )
+
         # 2. Force Contiguous Memory (C++ requires strict memory layout)
         # This prevents the SIGSEGV (Exit Code 139)
-        gray_frame = np.ascontiguousarray(gray_frame)
+        safe_frame = np.ascontiguousarray(padded_frame)
 
         # 3. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
         # ArUco default corner order: TL, TR, BR, BL
@@ -153,7 +166,7 @@ class FiducialMarker(object):
 
         # 4. Detect Markers using STag
         try:
-            corners, ids, rejected = stag.detectMarkers(image=gray_frame, libraryHD=self.libraryHD)
+            corners, ids, rejected = stag.detectMarkers(image=safe_frame, libraryHD=self.libraryHD)
         except Exception as e:
             print(f"STag Error: {e}")
             return frame_dict
@@ -169,6 +182,12 @@ class FiducialMarker(object):
                 # Ensure shape is correct for solvePnP (needs to be list of points)
                 if current_corners.shape == (1, 4, 2):
                     current_corners = current_corners.reshape(4, 2)
+
+                # --- CRITICAL FIX: REMOVE PADDING OFFSET ---
+                # Detected on a padded image: coordinates shifted by (10, 10)
+                #   Subtract the padding to get real coordinates.
+                current_corners[:, 0] -= padding  # X
+                current_corners[:, 1] -= padding  # Y
 
                 # Solve Perspective-n-Point to find pose
                 success, rvec, tvec = cv2.solvePnP(

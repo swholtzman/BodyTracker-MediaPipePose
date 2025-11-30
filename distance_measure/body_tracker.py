@@ -16,11 +16,12 @@ class BodyTracker:
         self.pose = self.mp_pose.Pose(
             min_detection_confidence=self.min_detection_confidence,
             min_tracking_confidence=self.min_tracking_confidence,
-            model_complexity=1, # 1 is default, 2 is more accurate but slower
+            model_complexity=2, # 1 is default, 2 is more accurate but slower
         )
 
         # --- Calibration State ---
         self.focal_ratio = None
+        self.real_width_cm = 40.0  # Default fallback
 
     @staticmethod
     def get_bounding_box(pose_landmarks, frame_width, frame_height):
@@ -90,12 +91,16 @@ class BodyTracker:
         return landmarks
 
 
-    def train(self, known_distance_cm, shoulder_pixel_width):
+    def train(self, known_distance_cm, shoulder_pixel_width, marker_px_width, marker_real_width_cm):
         """
         Learns the shoulder width ratio.
         """
-        if shoulder_pixel_width > 0:
+        if shoulder_pixel_width > 0 and marker_px_width > 0:
             self.focal_ratio = known_distance_cm * shoulder_pixel_width
+
+            # Learn user's actual shoulder width
+            ratio = shoulder_pixel_width / marker_px_width
+            self.real_width_cm = ratio * marker_real_width_cm
 
 
     def get_distance(self, shoulder_pixel_width):

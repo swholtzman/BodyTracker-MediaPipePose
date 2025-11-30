@@ -1,4 +1,3 @@
-
 from fiducial_markers import FiducialMarker
 from facial_tracker import FacialTracker
 from body_tracker import BodyTracker
@@ -8,6 +7,15 @@ import cv2  # cv2 must be imported AFTER fiducial_markers/stag
 import time
 import cvzone
 import numpy as np
+import sys
+
+# --- CONFIGURATION ---
+# Measure the black edge of the square marker in CM.
+# If this is wrong, the distance (Y) will be wrong.
+MARKER_SIZE_CM = 10.0
+
+# Smoothing factor (0.1 = slow/smooth, 0.9 = fast/jittery)
+ALPHA = 0.6
 
 
 class Main(object):
@@ -15,13 +23,20 @@ class Main(object):
         # Initialize FaceMesh with maxFaces=1 for cleaner tracking
         self.face_tracker = FacialTracker()
         self.body_tracker = BodyTracker()
-        self.markers = FiducialMarker(marker_size_cm=10.0)
+        self.markers = FiducialMarker(marker_size_cm=MARKER_SIZE_CM)
 
         self.camera = cv2.VideoCapture(0)
 
-        # Smoothing Filter for Distance
-        self.smoothed_distance = 0
-        self.ALPHA = 0.6  # Smoothing factor (0.1 = slow/smooth, 0.9 = fast/jittery)
+        # Optimize Camera Buffer (reduces latency)
+        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+        # Smoothing Filter State
+        self.smoothed_y = 0  # Depth (Y)
+        self.smoothed_x = 0  # Lateral (X)
+
+        # Output Throttling State
+        self.last_sent_x = -999.0
+        self.last_sent_y = -999.0
 
     def calibrate_lens(self):
         """
@@ -34,12 +49,11 @@ class Main(object):
         HOLD_TIME = 3.0  # Seconds to hold still
         MOVEMENT_THRESHOLD = 3.0  # Max pixel movement allowed to be considered "still"
 
-        print("Entering Lens Calibration Mode...")
+        print("Entering Lens Calibration Mode...", file=sys.stderr)
 
         # State variables for the automation
         last_corners = None
         stability_start_time = None
-        last_capture_time = 0
 
         while not self.markers.is_calibrated:
             success, frame = self.camera.read()
@@ -57,13 +71,16 @@ class Main(object):
             )
 
             instruction_text = "Searching for Checkerboard..."
-            box_color = (0, 0, 255)  # Red by default
+            box_color = (0, 0, 255)  # Red
 
             if found:
                 # Draw the corners so user knows it's detected
-                cv2.drawChessboardCorners(display_frame,
-                                          (self.markers.CHECKERBOARD_COLS, self.markers.CHECKERBOARD_ROWS),
-                                          corners, found)
+                cv2.drawChessboardCorners(
+                    display_frame,
+                    (self.markers.CHECKERBOARD_COLS, self.markers.CHECKERBOARD_ROWS),
+                    corners,
+                    found
+                )
 
                 # 2. Check Stability
                 is_stable = False
@@ -75,7 +92,7 @@ class Main(object):
                         is_stable = True
                     else:
                         is_stable = False
-                        stability_start_time = None  # Reset timer if moved
+                        stability_start_time = None
 
                 last_corners = corners
 
@@ -90,24 +107,50 @@ class Main(object):
                     if elapsed >= HOLD_TIME:
                         # --- CAPTURE! ---
                         calibration_frames.append(frame)
-                        print(f"Captured frame {len(calibration_frames)}/{REQUIRED_FRAMES}")
+                        print(f"Captured frame {len(calibration_frames)}/{REQUIRED_FRAMES}", file=sys.stderr)
 
                         # Visual Flash effect
-                        cv2.rectangle(display_frame, (0, 0), (frame.shape[1], frame.shape[0]), (255, 255, 255),
-                                      cv2.FILLED)
+                        cv2.rectangle(
+                            display_frame,
+                            (0, 0),
+                            (frame.shape[1],
+                             frame.shape[0]),
+                            (255, 255, 255),
+                            cv2.FILLED
+                        )
 
                         # Force a pause so they have to move it to a new angle
                         stability_start_time = None
-                        last_corners = None  # Reset stability check
+                        last_corners = None
                         time.sleep(0.5)
                     else:
-                        # Countdown UI
+                        # --- Countdown UI ---
                         instruction_text = f"HOLD STILL: {countdown}"
-                        box_color = (0, 255, 255)  # Yellow
+                        box_color = (0, 255, 255)
 
-                        # Draw a progress bar or shrinking circle
-                        cv2.circle(display_frame, (50, 50), 30, (0, 255, 255), 2)
-                        cv2.circle(display_frame, (50, 50), int(30 * (elapsed / HOLD_TIME)), (0, 255, 255), -1)
+                        # 1. Get the frame dimensions
+                        height, width, _ = display_frame.shape
+
+                        # Define positions relative to screen size
+                        center_x = width // 2
+                        center_y = height - 100
+
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        font_scale = 0.8
+                        font_thickness = 2
+                        text_color = (0, 255, 255)
+
+                        # Draw Timer Circle
+                        cv2.circle(display_frame, (center_x, center_y), 30, text_color, 2)
+                        cv2.circle(display_frame, (center_x, center_y), int(30 * (elapsed / HOLD_TIME)), text_color, -1)
+
+                        # Draw Text Centered
+                        (text_w, text_h), _ = cv2.getTextSize(instruction_text, font, font_scale, font_thickness)
+                        text_x = center_x - (text_w // 2)
+                        text_y = center_y + 50
+
+                        cv2.putText(display_frame, instruction_text, (text_x, text_y),
+                                    font, font_scale, text_color, font_thickness, cv2.LINE_AA)
 
                 else:
                     instruction_text = "Stabilizing..."
@@ -117,7 +160,6 @@ class Main(object):
                 cvzone.putTextRect(display_frame, "CALCULATING...", (50, 200), scale=3, thickness=3)
                 cv2.imshow('Facial Tracker', display_frame)
                 cv2.waitKey(100)
-
                 self.markers.run_checkerboard_calibration(calibration_frames)
                 break
 
@@ -131,18 +173,17 @@ class Main(object):
                 cvzone.putTextRect(display_frame, "Move board to new angle", (50, 150), scale=1, thickness=1)
 
             cv2.imshow('Facial Tracker', display_frame)
-            key_pressed = cv2.waitKey(1) & 0xFF
-            if key_pressed == 27:  # ESC
-                print("Skipping Lens Calibration")
+            if cv2.waitKey(1) & 0xFF == 27:  # ESC
+                print("Skipping Lens Calibration", file=sys.stderr)
                 break
 
-        print("Lens Calibration Complete")
+        print("Lens Calibration Complete", file=sys.stderr)
 
     def run(self):
         if not self.markers.is_calibrated:
             self.calibrate_lens()
 
-        print("Tracking started.")
+        print("System Ready. Streaming data format: x,y,yaw (meters)", flush=True, file=sys.stderr)
 
         while True:
             success, frame = self.camera.read()
@@ -152,78 +193,135 @@ class Main(object):
             # Use a writable copy for drawing
             display_frame = frame.copy()
             height, width, _ = frame.shape
+            frame_center_x = width // 2
 
-            # --- DATA GATHERING ---
-            # 1. Body Data (Always run this, we need the box and shoulders)
+            # --- 1. GATHER RAW DATA ---
+            # Run these every frame to ensure data exists if switching modes
             pose_landmarks = self.body_tracker.detect_body(display_frame, draw=True)
-            shoulder_width = self.body_tracker.get_shoulder_width_pixels(pose_landmarks, width, height)
+            shoulder_width_px = self.body_tracker.get_shoulder_width_pixels(pose_landmarks, width, height)
 
-            # 2. Face Data
+            # Face Data
             display_frame, faces = self.face_tracker.detect_face(display_frame)
-            face_width = 0
+            face_width_px = 0
+            face_center_x = frame_center_x
             if faces:
-                face_width = self.face_tracker.get_eye_width(faces[0])
+                face_width_px = self.face_tracker.get_eye_width(faces[0])
+                face_center_x = (faces[0][145][0] + faces[0][374][0]) // 2
 
-            # 3. Marker Data
+            # Marker Data
             marker_results = self.markers.detect_marker_pose(frame)
 
-            # --- DECISION LOGIC ---
-            raw_distance = 0
-            source_label = "SEARCHING"
-            color = (0, 0, 255)  # Red
+            # --- 2. DETERMINE LOCATION ---
+            # Default to Last Known Location (prevents snapping to 0)
+            target_z_cm = self.smoothed_y
+            target_x_cm = self.smoothed_x
 
-            # CASE A: Marker Detected (The Teacher)
+            source_label = "LOST (Holding)"
+            color = (100, 100, 100)  # Gray
+
+            # PRIORITY 1: Marker (The "Teacher")
             if marker_results:
                 first_id = list(marker_results.keys())[0]
                 _, tvec, corners = marker_results[first_id]
 
-                raw_distance = tvec[2][0]
-                source_label = "MARKER (Accurate)"
+                # Calculate Marker Pixel Width (Average of 4 sides for robustness)
+                # corners shape is (1, 4, 2)
+                c = corners[0]
+                side_1 = np.linalg.norm(c[0] - c[1])
+                side_2 = np.linalg.norm(c[1] - c[2])
+                side_3 = np.linalg.norm(c[2] - c[3])
+                side_4 = np.linalg.norm(c[3] - c[0])
+                marker_width_px = (side_1 + side_2 + side_3 + side_4) / 4.0
+
+                # Y = Depth (OpenCV z), X = Lateral (OpenCV x)
+                target_x_cm = tvec[0][0]
+                target_z_cm = tvec[2][0]
+
+                source_label = "MARKER"
                 color = (0, 255, 0)  # Green
 
-                # TRAIN STUDENTS
-                self.face_tracker.train(raw_distance, face_width)
-                self.body_tracker.train(raw_distance, shoulder_width)
+                # TRAIN STUDENTS with Relative Size Logic
+                self.face_tracker.train(target_z_cm, face_width_px, marker_width_px, MARKER_SIZE_CM)
+                self.body_tracker.train(target_z_cm, shoulder_width_px, marker_width_px, MARKER_SIZE_CM)
 
-                # Draw Marker
+                # Visuals
                 pts = corners.reshape((-1, 1, 2)).astype(np.int32)
                 cv2.polylines(display_frame, [pts], True, (255, 0, 255), 2)
 
-            # CASE B: Face Detected (Student 1)
+            # PRIORITY 2: Face (Student 1)
             elif faces and self.face_tracker.focal_ratio:
-                raw_distance = self.face_tracker.get_distance(face_width)
-                source_label = "FACE (Robust)"
+                target_z_cm = self.face_tracker.get_distance(face_width_px)
+
+                # Calculate X offset
+                scale = self.face_tracker.real_width_cm / face_width_px if face_width_px > 0 else 0
+                target_x_cm = (face_center_x - frame_center_x) * scale
+
+                source_label = "FACE"
                 color = (0, 255, 255)  # Yellow
 
-                # Chain Training: Face can keep Body updated if Marker is lost
-                self.body_tracker.train(raw_distance, shoulder_width)
-
-            # CASE C: Body Only (Student 2 - Turning Around)
+            # PRIORITY 3: Body (Student 2)
             elif pose_landmarks and self.body_tracker.focal_ratio:
-                raw_distance = self.body_tracker.get_distance(shoulder_width)
-                source_label = "BODY (Fallback)"
+                target_z_cm = self.body_tracker.get_distance(shoulder_width_px)
+
+                # Calculate X offset via BBox center
+                bbox = self.body_tracker.get_bounding_box(pose_landmarks, width, height)
+                if bbox:
+                    body_center = (bbox[0] + bbox[2]) // 2
+                    scale = self.body_tracker.real_width_cm / shoulder_width_px if shoulder_width_px > 0 else 0
+                    target_x_cm = (body_center - frame_center_x) * scale
+
+                source_label = "BODY"
                 color = (255, 0, 0)  # Blue
 
-            # --- SMOOTHING ---
-            # Prevents jitter when switching between modes
-            if raw_distance > 0:
-                if self.smoothed_distance == 0:
-                    self.smoothed_distance = raw_distance
-                else:
-                    self.smoothed_distance = (self.ALPHA * raw_distance) + ((1 - self.ALPHA) * self.smoothed_distance)
+            # --- 3. SMOOTHING ---
+            # Apply alpha filter to remove jitter
+            self.smoothed_y = (ALPHA * target_z_cm) + ((1 - ALPHA) * self.smoothed_y)
+            self.smoothed_x = (ALPHA * target_x_cm) + ((1 - ALPHA) * self.smoothed_x)
 
-            # --- UI DRAWING ---
+            # --- 4. OUTPUT TO SYSTEM (Throttled) ---
+            # Only print if position changed by > 1cm (0.01m)
+            out_x_m = self.smoothed_x / 100.0
+            out_y_m = self.smoothed_y / 100.0
+
+            delta = abs(out_x_m - self.last_sent_x) + abs(out_y_m - self.last_sent_y)
+
+            if delta > 0.01:
+                # Format: x, y, yaw
+                print(f"{out_x_m:.4f},{out_y_m:.4f},0.0", flush=True)
+                self.last_sent_x = out_x_m
+                self.last_sent_y = out_y_m
+
+            # --- 5. UI DRAWING ---
+            # We always draw the "Last Known" or "Current" location
+            info_text = f"Y:{int(self.smoothed_y)}cm X:{int(self.smoothed_x)}cm"
+
+            # Attach label to whatever is visible, or top left if Lost
+            label_pos = (50, 50)
+
             if pose_landmarks:
                 bbox = self.body_tracker.get_bounding_box(pose_landmarks, width, height)
                 if bbox:
-                    x_min, y_min, x_max, y_max = bbox
-                    cv2.rectangle(display_frame, (x_min, y_min), (x_max, y_max), color, 2)
+                    cv2.rectangle(display_frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
+                    label_pos = (bbox[0], bbox[1] - 40)
 
-                    # Info Tag
-                    cvzone.putTextRect(display_frame, f"{int(self.smoothed_distance)}cm",
-                                       (x_min, y_min - 40), scale=2, thickness=2, colorR=color, colorT=(0, 0, 0))
-                    cvzone.putTextRect(display_frame, source_label,
-                                       (x_min, y_min - 10), scale=1, thickness=1, colorR=color, colorT=(0, 0, 0))
+            cvzone.putTextRect(
+                display_frame,
+                info_text, label_pos,
+                scale=2,
+                thickness=2,
+                colorR=color,
+
+                colorT=(0, 0, 0)
+            )
+
+            cvzone.putTextRect(
+                display_frame,
+                source_label,
+                (label_pos[0], label_pos[1] + 30),
+                scale=1,
+                thickness=1,
+                colorR=color, colorT=(0, 0, 0)
+            )
 
             cv2.imshow('Facial Tracker', display_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
