@@ -2,6 +2,8 @@ import cv2
 import math
 import mediapipe as mp
 
+from helper_functions import get_distance
+
 class BodyTracker:
     def __init__(self):
         self.mp_pose = mp.solutions.pose
@@ -19,9 +21,9 @@ class BodyTracker:
             model_complexity=2, # 1 is default, 2 is more accurate but slower
         )
 
-        # --- Calibration State ---
-        self.focal_ratio = None
-        self.real_width_cm = 40.0  # Default fallback
+        # Calibration State
+        self.focal_ratio_width = None
+        self.focal_ratio_height = None
 
     @staticmethod
     def get_bounding_box(pose_landmarks, frame_width, frame_height):
@@ -34,13 +36,42 @@ class BodyTracker:
         x_list = [landmark.x for landmark in pose_landmarks.landmark]
         y_list = [landmark.y for landmark in pose_landmarks.landmark]
 
-        bbox_min_x = int(min(x_list) * frame_width)
-        bbox_max_x = int(max(x_list) * frame_width)
-        bbox_min_y = int(min(y_list) * frame_height)
-        bbox_max_y = int(max(y_list) * frame_height)
+        return (int(min(x_list) * frame_width), int(min(y_list) * frame_height),
+                int(max(x_list) * frame_width), int(max(y_list) * frame_height))
 
-        return bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y
+    @staticmethod
+    def get_body_dimensions(pose_landmarks, frame_width, frame_height):
+        """
+        Returns (width_px, height_px)
+        Width: Left Shoulder (11) to Right Shoulder (12)
+        Height: Mid-Shoulder to Mid-Hip (Torso Length) - stable during rotation
+        """
+        if not pose_landmarks:
+            return 0, 0
 
+        lm = pose_landmarks.landmark
+
+        # Helpers to get pixel coords
+        def get_pt(idx):
+            return int(lm[idx].x * frame_width), int(lm[idx].y * frame_height)
+
+        l_shoulder = get_pt(11)
+        r_shoulder = get_pt(12)
+        l_hip = get_pt(23)
+        r_hip = get_pt(24)
+
+        # 1. Width: Shoulder to Shoulder
+        width_px = math.dist(l_shoulder, r_shoulder)
+
+        # 2. Height: Mid-Shoulder to Mid-Hip
+        mid_shoulder = ((l_shoulder[0] + r_shoulder[0]) / 2, (l_shoulder[1] + r_shoulder[1]) / 2)
+        mid_hip = ((l_hip[0] + r_hip[0]) / 2, (l_hip[1] + r_hip[1]) / 2)
+
+        height_px = math.dist(mid_shoulder, mid_hip)
+
+        return width_px, height_px
+
+    # Legacy wrapper
     @staticmethod
     def get_shoulder_width_pixels(pose_landmarks, frame_width, frame_height):
         """
@@ -61,7 +92,6 @@ class BodyTracker:
         pixel_width = math.dist(ls_point, rs_point)
         return pixel_width
 
-
     def detect_body(self, frame, draw=True):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.pose.process(frame_rgb)
@@ -77,33 +107,52 @@ class BodyTracker:
                 landmark_drawing_spec=self.mp_drawing_styles.get_default_pose_landmarks_style()
             )
 
-            # 2. Draw the "Measurement Ruler" (Shoulder to Shoulder)
-            h, w, c = frame.shape
-            lm = landmarks.landmark  # Access the list of 33 points
+            # 2. Prepare for Custom Drawing
+            height, width, c = frame.shape
+            lm = landmarks.landmark  # <--- Define 'lm' here so we can use it below
 
+            # --- DRAW HORIZONTAL AXIS (Yellow) ---
             # Point 11 = Left Shoulder, Point 12 = Right Shoulder
-            l_shoulder = (int(lm[11].x * w), int(lm[11].y * h))
-            r_shoulder = (int(lm[12].x * w), int(lm[12].y * h))
+            l_shoulder = (int(lm[11].x * width), int(lm[11].y * height))
+            r_shoulder = (int(lm[12].x * width), int(lm[12].y * height))
 
-            # Draw Yellow Line (Thickness 3)
+            # Draw Yellow Line (Shoulder Width)
             cv2.line(frame, l_shoulder, r_shoulder, (0, 255, 255), 3)
+
+            # --- DRAW VERTICAL AXIS (Magenta) ---
+            # We need this to visualize the "Height" tracking that prevents the rotation bug
+
+            # Calculate Mid-Shoulder Point
+            mid_shoulder_x = int((l_shoulder[0] + r_shoulder[0]) / 2)
+            mid_shoulder_y = int((l_shoulder[1] + r_shoulder[1]) / 2)
+
+            # Calculate Mid-Hip Point (23=Left Hip, 24=Right Hip)
+            l_hip = (int(lm[23].x * width), int(lm[23].y * height))
+            r_hip = (int(lm[24].x * width), int(lm[24].y * height))
+            mid_hip_x = int((l_hip[0] + r_hip[0]) / 2)
+            mid_hip_y = int((l_hip[1] + r_hip[1]) / 2)
+
+            # Draw Magenta Line (Torso Height)
+            cv2.line(frame, (mid_shoulder_x, mid_shoulder_y), (mid_hip_x, mid_hip_y), (255, 0, 255), 3)
 
         return landmarks
 
 
-    def train(self, known_distance_cm, shoulder_pixel_width, marker_px_width, marker_real_width_cm):
+    def train(self, known_distance_cm, width_px, height_px):
         """
         Learns the shoulder width ratio.
         """
-        if shoulder_pixel_width > 0 and marker_px_width > 0:
-            self.focal_ratio = known_distance_cm * shoulder_pixel_width
-
-            # Learn user's actual shoulder width
-            ratio = shoulder_pixel_width / marker_px_width
-            self.real_width_cm = ratio * marker_real_width_cm
+        if width_px > 0:
+            self.focal_ratio_width = known_distance_cm * width_px
+        if height_px > 0:
+            self.focal_ratio_height = known_distance_cm * height_px
 
 
-    def get_distance(self, shoulder_pixel_width):
-        if self.focal_ratio is None or shoulder_pixel_width == 0:
-            return 0
-        return self.focal_ratio / shoulder_pixel_width
+    def get_distance(self, width_px, height_px):
+        """
+
+        :param width_px:
+        :param height_px:
+        :return:
+        """
+        return get_distance(self, width_px, height_px)

@@ -196,16 +196,16 @@ class Main(object):
             frame_center_x = width // 2
 
             # --- 1. GATHER RAW DATA ---
-            # Run these every frame to ensure data exists if switching modes
+            # Body Data: Get Width AND Height
             pose_landmarks = self.body_tracker.detect_body(display_frame, draw=True)
-            shoulder_width_px = self.body_tracker.get_shoulder_width_pixels(pose_landmarks, width, height)
+            body_w_px, body_h_px = self.body_tracker.get_body_dimensions(pose_landmarks, width, height)
 
-            # Face Data
+            # Face Data: Get WIDTH and HEIGHT
             display_frame, faces = self.face_tracker.detect_face(display_frame)
-            face_width_px = 0
+            face_w_px, face_h_px = 0, 0
             face_center_x = frame_center_x
             if faces:
-                face_width_px = self.face_tracker.get_eye_width(faces[0])
+                face_w_px, face_h_px = self.face_tracker.get_face_dimensions(faces[0])
                 face_center_x = (faces[0][145][0] + faces[0][374][0]) // 2
 
             # Marker Data
@@ -224,69 +224,63 @@ class Main(object):
                 first_id = list(marker_results.keys())[0]
                 _, tvec, corners = marker_results[first_id]
 
-                # Calculate Marker Pixel Width (Average of 4 sides for robustness)
-                # corners shape is (1, 4, 2)
-                c = corners[0]
-                side_1 = np.linalg.norm(c[0] - c[1])
-                side_2 = np.linalg.norm(c[1] - c[2])
-                side_3 = np.linalg.norm(c[2] - c[3])
-                side_4 = np.linalg.norm(c[3] - c[0])
-                marker_width_px = (side_1 + side_2 + side_3 + side_4) / 4.0
-
-                # Y = Depth (OpenCV z), X = Lateral (OpenCV x)
+                # Accurate Marker Z/X
                 target_x_cm = tvec[0][0]
                 target_z_cm = tvec[2][0]
 
                 source_label = "MARKER"
-                color = (0, 255, 0)  # Green
+                color = (0, 255, 0)
 
-                # TRAIN STUDENTS with Relative Size Logic
-                self.face_tracker.train(target_z_cm, face_width_px, marker_width_px, MARKER_SIZE_CM)
-                self.body_tracker.train(target_z_cm, shoulder_width_px, marker_width_px, MARKER_SIZE_CM)
+                # TRAIN STUDENTS using the valid Marker Z
+                self.face_tracker.train(target_z_cm, face_w_px, face_h_px)
+                self.body_tracker.train(target_z_cm, body_w_px, body_h_px)
 
                 # Visuals
                 pts = corners.reshape((-1, 1, 2)).astype(np.int32)
                 cv2.polylines(display_frame, [pts], True, (255, 0, 255), 2)
 
             # PRIORITY 2: Face (Student 1)
-            elif faces and self.face_tracker.focal_ratio:
-                target_z_cm = self.face_tracker.get_distance(face_width_px)
+            elif faces and self.face_tracker.focal_ratio_width:
+                # Use Multi-Axis distance (filters rotation)
+                target_z_cm = self.face_tracker.get_distance(face_w_px, face_h_px)
 
-                # Calculate X offset
-                scale = self.face_tracker.real_width_cm / face_width_px if face_width_px > 0 else 0
-                target_x_cm = (face_center_x - frame_center_x) * scale
+                # Approximate X using horizontal offset
+                # Need approximate scale (cm per pixel) at this depth
+                # Scale ~ Distance / FocalRatio. Using Width Ratio for X calculations
+                if face_w_px > 0:
+                    scale = target_z_cm / self.face_tracker.focal_ratio_width
+                    target_x_cm = (face_center_x - frame_center_x) * scale * self.face_tracker.real_width_cm  # Rough approx
 
                 source_label = "FACE"
                 color = (0, 255, 255)  # Yellow
 
             # PRIORITY 3: Body (Student 2)
-            elif pose_landmarks and self.body_tracker.focal_ratio:
-                target_z_cm = self.body_tracker.get_distance(shoulder_width_px)
+            elif pose_landmarks and self.body_tracker.focal_ratio_width:
+                target_z_cm = self.body_tracker.get_distance(body_w_px, body_h_px)
 
-                # Calculate X offset via BBox center
+                # Approximate X
                 bbox = self.body_tracker.get_bounding_box(pose_landmarks, width, height)
                 if bbox:
                     body_center = (bbox[0] + bbox[2]) // 2
-                    scale = self.body_tracker.real_width_cm / shoulder_width_px if shoulder_width_px > 0 else 0
-                    target_x_cm = (body_center - frame_center_x) * scale
+                    if body_w_px > 0:
+                        scale = target_z_cm / self.body_tracker.focal_ratio_width
+                        target_x_cm = (body_center - frame_center_x) * scale * 40.0  # fallback scaling
 
                 source_label = "BODY"
-                color = (255, 0, 0)  # Blue
+                color = (255, 0, 0)
 
             # --- 3. SMOOTHING ---
             # Apply alpha filter to remove jitter
             self.smoothed_y = (ALPHA * target_z_cm) + ((1 - ALPHA) * self.smoothed_y)
             self.smoothed_x = (ALPHA * target_x_cm) + ((1 - ALPHA) * self.smoothed_x)
 
-            # --- 4. OUTPUT TO SYSTEM (Throttled) ---
-            # Only print if position changed by > 1cm (0.01m)
+            # --- 4. OUTPUT ---
             out_x_m = self.smoothed_x / 100.0
             out_y_m = self.smoothed_y / 100.0
 
             delta = abs(out_x_m - self.last_sent_x) + abs(out_y_m - self.last_sent_y)
 
             if delta > 0.01:
-                # Format: x, y, yaw
                 print(f"{out_x_m:.4f},{out_y_m:.4f},0.0", flush=True)
                 self.last_sent_x = out_x_m
                 self.last_sent_y = out_y_m

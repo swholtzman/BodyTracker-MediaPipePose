@@ -15,10 +15,11 @@ class Runner:
     def __init__(self):
         pass
 
-    def run(self):
+    @staticmethod
+    def run():
         print("Running Facial Tracker", file=sys.stderr)
         main = Main()
-        print(f"Distance Measured: ", file=sys.stderr)
+        print("Distance Measured: ", file=sys.stderr)
         main.run()
 
 if __name__ == '__main__':

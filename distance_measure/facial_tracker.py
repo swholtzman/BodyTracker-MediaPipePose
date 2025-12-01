@@ -1,14 +1,20 @@
 import cv2
 from cvzone.FaceMeshModule import FaceMeshDetector
 
+from helper_functions import get_distance
+
 class FacialTracker:
     def __init__(self, max_faces=1):
         # 'refine_landmarks=True' improves eye/iris tracking stability
         self.detector = FaceMeshDetector(maxFaces=max_faces)
-        self.focal_ratio = None # The "learned" constant
 
-        # Default fallback, but will be overwritten by training
+        # Store focal ratios for both axes to handle rotation
+        self.focal_ratio_width = None
+        self.focal_ratio_height = None
+
+        # Fallbacks (overwritten by training)
         self.real_width_cm = 6.3
+        self.real_height_cm = 18.0  # Approx avg face height
 
     def detect_face(self, frame, draw=True):
         """
@@ -16,6 +22,21 @@ class FacialTracker:
         """
         return self.detector.findFaceMesh(frame, draw=draw)
 
+    def get_face_dimensions(self, face):
+        """
+        Returns (width_px, height_px)
+        Width: Distance between Left Eye (145) and Right Eye (374)
+        Height: Distance between Forehead (10) and Chin (152) - stable during Yaw rotation
+        """
+        # Horizontal (Eyes)
+        width, _ = self.detector.findDistance(face[145], face[374])
+
+        # Vertical (Forehead to Chin)
+        height, _ = self.detector.findDistance(face[10], face[152])
+
+        return width, height
+
+    # Legacy wrapper for compatibility if needed, but main loop will use get_face_dimensions
     def get_eye_width(self, face):
         """
         Returns pixel distance between left eye (145) and right eye (374)
@@ -26,25 +47,22 @@ class FacialTracker:
         width, _ = self.detector.findDistance(pointLeft, pointRight)
         return width
 
-    def train(self, known_distance_cm, current_pixel_width, marker_px_width, marker_real_width_cm):
+    def train(self, known_distance_cm, current_width_px, current_height_px):
         """
         1. Learns Focal Ratio for Depth (Z)
         2. Learns Real Face Width for Lateral (X)
         """
-        if current_pixel_width > 0 and marker_px_width > 0:
-            # Calibrate Depth (Z)
-            self.focal_ratio = known_distance_cm * current_pixel_width
+        if current_width_px > 0:
+            self.focal_ratio_width = known_distance_cm * current_width_px
 
-            # Calibrate Size (X) - The "Same Distance" Logic
-            # Ratio: Face_Px / Marker_Px = Face_Real / Marker_Real
-            ratio = current_pixel_width / marker_px_width
-            self.real_width_cm = ratio * marker_real_width_cm
+        if current_height_px > 0:
+            self.focal_ratio_height = known_distance_cm * current_height_px
 
-    def get_distance(self, current_pixel_width):
+    def get_distance(self, width_px, height_px):
         """
-        Calculates distance using the learned ratio.
-        Distance = Ratio / PixelWidth
+
+        :param width_px:
+        :param height_px:
+        :return:
         """
-        if self.focal_ratio is None or current_pixel_width == 0:
-            return 0
-        return self.focal_ratio / current_pixel_width
+        return get_distance(self, width_px, height_px)

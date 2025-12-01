@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="rename pattern.png to checker_board.png">
-      <change afterPath="$PROJECT_DIR$/problem_report.txt" afterDir="false" />
+    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="workspace.xml update">
+      <change afterPath="$PROJECT_DIR$/distance_measure/helper_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/body_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/body_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/facial_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/facial_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,32 +49,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.body_tracker.executor": "Run",
-    "Python.facial_tracker.executor": "Run",
-    "Python.fiducial_markers.executor": "Run",
-    "Python.generate_markers.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.mathematics.executor": "Run",
-    "Python.runner.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/resources",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "settings.editor.splitter.proportion": "0.38174602",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.body_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.facial_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fiducial_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mathematics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.38174602&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/resources" />
@@ -185,7 +190,9 @@
       <workItem from="1764273128059" duration="330000" />
       <workItem from="1764273470170" duration="428000" />
       <workItem from="1764273910158" duration="14719000" />
-      <workItem from="1764455414540" duration="12465000" />
+      <workItem from="1764455414540" duration="13856000" />
+      <workItem from="1764581473078" duration="1875000" />
+      <workItem from="1764583375933" duration="411000" />
     </task>
     <task id="LOCAL-00001" summary="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)">
       <option name="closed" value="true" />
@@ -283,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764474884888</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="workspace.xml update">
+      <option name="closed" value="true" />
+      <created>1764501591519</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764501591519</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -300,13 +315,14 @@
     <MESSAGE value="post-merge xml correction" />
     <MESSAGE value="output distance measures in meters as a 3-part tuple (e.g., 0.0078,0.3179,0.0) for x,y,yaw. &#10;output measures to console and to STDOut&#10;relocated lens calibration UI output to be centered horizontally on display&#10;relocated primary run to runner.py" />
     <MESSAGE value="rename pattern.png to checker_board.png" />
-    <option name="LAST_COMMIT_MESSAGE" value="rename pattern.png to checker_board.png" />
+    <MESSAGE value="workspace.xml update" />
+    <option name="LAST_COMMIT_MESSAGE" value="workspace.xml update" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764464637346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$body_tracker.coverage" NAME="body_tracker Coverage Results" MODIFIED="1764237124739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$body_tracker.coverage" NAME="body_tracker Coverage Results" MODIFIED="1764583224326" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$mathematics.coverage" NAME="mathematics Coverage Results" MODIFIED="1763672299662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$runner.coverage" NAME="runner Coverage Results" MODIFIED="1764466801489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$runner.coverage" NAME="runner Coverage Results" MODIFIED="1764583597062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1764466457045" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$generate_markers.coverage" NAME="generate_markers Coverage Results" MODIFIED="1763775649113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$facial_tracker.coverage" NAME="facial_tracker Coverage Results" MODIFIED="1763762554978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
