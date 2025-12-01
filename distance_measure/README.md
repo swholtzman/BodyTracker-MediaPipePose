@@ -4,7 +4,7 @@
 This module implements a real-time distance and position tracking system using a hybrid approach of fiducial markers (STag), facial feature tracking (MediaPipe FaceMesh), and skeletal body tracking (MediaPipe Pose).
 
 It is designed to feed spatial coordinates (`x`, `y`, `yaw`) into an external audio control system via `stdout`.
-
+___
 ## Coordinate System
 
 The system outputs coordinates relative to the camera's optical center:
@@ -17,7 +17,7 @@ The system outputs coordinates relative to the camera's optical center:
 * **Yaw:** Rotation around the vertical axis (Placeholder: currently output as `0.0`).
 
 **Units:** Meters.
-
+___
 ## Core Logic: Multi-Axis Distance Estimation
 
 A primary challenge in single-camera depth estimation is differentiating between a subject moving away (scale decrease) and a subject rotating (width decrease). To solve this, the system implements a **Multi-Axis Heuristic**.
@@ -42,46 +42,64 @@ True_Distance = min(
     Focal_Ratio_Height / Current_Height_Px
 )
 ```
-
+___
 ## Module Overview
 
-### `main.py`
+### `distance_measure_main.py`
 
-The entry point and orchestration layer.
+The orchestration layer that fuses data from all trackers.
 
-  * **Priority Logic:** Prioritizes tracking sources in the order: Marker \> Face \> Body.
-  * **Dynamic Training:** When the reliable Marker is visible, it "trains" the Face and Body trackers by updating their internal focal ratios based on the current known depth.
-  * **Smoothing:** Applies an exponential moving average (alpha filter) to raw coordinates to reduce jitter.
-  * **Output:** Prints CSV-formatted coordinates to `stdout` only when a significant position delta (\>1cm) is detected.
+* **Frame Management:** Creates distinct copies of the video frame to prevent cross-talk between libraries.
+    * *Calculation Frame:* Kept pristine for STag marker detection (prevents C++ crashes).
+    * *Display Frame:* Used for drawing debug lines, skeletons, and head axes.
+* **Priority Logic:** Prioritizes tracking sources in the order: Marker > Face > Body.
+* **Hybrid Training:**
+    * When the **Marker** is visible, it provides "Ground Truth" depth.
+    * It effectively "trains" the Face and Body trackers by teaching them the user's specific physical dimensions (e.g., "This specific user's shoulders are 42cm wide").
+* **Smoothing:** Applies an exponential moving average (alpha filter) to raw coordinates to reduce jitter.
+* **Output:** Prints aggregated `x, y, yaw` coordinates to `stdout` (throttled to updates >1cm).
 
 ### `fiducial_markers.py`
 
 Handles STag marker detection and pose estimation.
 
-  * **Library:** Uses `stag-python` (HD23 family).
-  * **Crash Prevention:** Implements a safety border (padding) around image frames before processing to prevent C++ Segmentation Faults (SIGSEGV) caused by edge detection algorithms reading out-of-bounds memory.
-  * **Calibration:** Includes an automated lens calibration routine using a chessboard pattern to solve for the camera matrix and distortion coefficients.
+* **Library:** Uses `stag-python` (HD23 family).
+* **Crash Prevention:** Implements a safety border (padding) around image frames before processing to prevent C++ Segmentation Faults (SIGSEGV) caused by edge detection algorithms reading out-of-bounds memory.
+* **Calibration:** Includes an automated lens calibration routine using a chessboard pattern to solve for the camera matrix and distortion coefficients.
 
 ### `facial_tracker.py`
 
 Wraps MediaPipe FaceMesh.
 
-  * **Tracking:** Uses landmarks 145/374 (eyes) for width and 10/152 (forehead/chin) for height.
-  * **Relative Scaling:** Learns the user's specific facial dimensions relative to the physical marker size during the "Training" phase.
+* **Tracking:** Uses landmarks 145/374 (eyes) for width and 10/152 (forehead/chin) for height.
+* **Relative Scaling:** Learns the user's specific facial dimensions relative to the physical marker size during the "Training" phase.
 
 ### `body_tracker.py`
 
 Wraps MediaPipe Pose.
 
-  * **Tracking:** Uses landmarks 11/12 (shoulders) for width and midpoints of 11/12 to 23/24 (hips) for torso height.
-  * **Visualization:** Draws specific debug lines on the frame:
-      * **Yellow Line:** Horizontal axis (Width).
-      * **Magenta Line:** Vertical axis (Height).
+* **Tracking:** Uses landmarks 11/12 (shoulders) for width and midpoints of 11/12 to 23/24 (hips) for torso height.
+* **Visualization:** Draws specific debug lines on the frame:
+    * **Yellow Line:** Horizontal axis (Width).
+    * **Magenta Line:** Vertical axis (Height).
 
 ### `helper_functions.py`
 
 Contains shared mathematical utilities, specifically the `get_distance` implementation used by both tracker classes to ensure consistent multi-axis logic.
 
+### `distance_measure_main.py`
+
+The orchestration layer that fuses data from all trackers.
+
+* **Frame Management:** Creates distinct copies of the video frame to prevent cross-talk between libraries.
+    * *Calculation Frame:* Kept pristine for STag marker detection (prevents C++ crashes).
+    * *Display Frame:* Used for drawing debug lines, skeletons, and head axes.
+* **Priority Logic:** Prioritizes tracking sources in the order: Marker > Face > Body.
+* **Hybrid Training:**
+    * When the **Marker** is visible, it provides "Ground Truth" depth.
+    * It effectively "trains" the Face and Body trackers by teaching them the user's specific physical dimensions (e.g., "This specific user's shoulders are 42cm wide").
+* **Output:** Prints aggregated `x, y, yaw` coordinates to `stdout`.
+___
 ## Usage
 
 Run via the root runner script to ensure proper path handling:
@@ -98,6 +116,3 @@ If `calibration_data.npz` is missing, the system enters **Lens Calibration Mode*
 1.  Print a checkerboard pattern.
 2.  Hold it in front of the camera.
 3.  Hold still when the indicator turns green until 15 frames are captured.
-
-```
-```

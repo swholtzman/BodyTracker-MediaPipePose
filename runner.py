@@ -6,9 +6,15 @@ import cv2   # <--- Import cv2 second
 import os
 import sys
 
+# --- PATH CONFIGURATION ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 1. Add Distance Measure
 sys.path.append(os.path.join(current_dir, 'distance_measure'))
-from distance_measure.main import Main
+
+# 2. Add Head Pose Estimation (So it can find 'helpers' and 'models
+
+from distance_measure.distance_measure_main import Main
 
 
 class Runner:

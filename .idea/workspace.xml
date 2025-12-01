@@ -4,9 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="fix: resolve distance spike on user rotation and crash on NoneType&#10;&#10;- Implement Multi-Axis Distance Estimation in `facial_tracker.py` and `body_tracker.py` to differentiate between a user moving away (both axes shrink) and rotating (only width shrinks).&#10;- Add vertical axis (torso height/face height) tracking to stabilize depth readings when user turns 90 degrees.&#10;- Fix `TypeError` crash in `get_distance` caused by missing `return` statement in helper function wrappers.&#10;- Update `main.py` to utilize new multi-axis training and distance logic.&#10;- Add visual debug lines (Yellow for Width, Magenta for Height) to the Body Tracker UI.">
-      <change afterPath="$PROJECT_DIR$/distance_measure/README.md" afterDir="false" />
+    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="added README.md">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/crash_info.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/NLML_HPE_Model_Builder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/assets/Architecture.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/assets/Girl.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/assets/Man_call_smartphone.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/assets/NLML_HPE_demo.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/configs/config_EncoderTrainer.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/configs/config_MlpHeads.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/configs/config_NLML_HPE_Test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/configs/config_TD_main.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/helpers/FeatureExtractor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/helpers/IntrinsicRotation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/helpers/datasets.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/hpe_main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/models/Encoder.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/models/combined_model_scripted.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/models/pitch_network.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/models/roll_network.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/models/yaw_network.pth" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/head_pose_estimation/pose_estimator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/distance_measure_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +85,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/resources",
+    "last_opened_file_path": "/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/head_pose_estimation",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -73,6 +98,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/head_pose_estimation" />
       <recent name="$PROJECT_DIR$/resources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -106,7 +132,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="distance_measure_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="BodyTracker-MediaPipePose" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -120,7 +146,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/distance_measure/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/distance_measure/distance_measure_main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -180,12 +206,12 @@
       <item itemvalue="Python.body_tracker" />
       <item itemvalue="Python.runner" />
       <item itemvalue="Python.python runner.py" />
-      <item itemvalue="Python.main" />
+      <item itemvalue="Python.distance_measure_main" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.python runner.py" />
-        <item itemvalue="Python.main" />
+        <item itemvalue="Python.distance_measure_main" />
       </list>
     </recent_temporary>
   </component>
@@ -213,7 +239,8 @@
       <workItem from="1764273910158" duration="14719000" />
       <workItem from="1764455414540" duration="13856000" />
       <workItem from="1764581473078" duration="1875000" />
-      <workItem from="1764583375933" duration="1022000" />
+      <workItem from="1764583375933" duration="1711000" />
+      <workItem from="1764586022085" duration="2667000" />
     </task>
     <task id="LOCAL-00001" summary="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)">
       <option name="closed" value="true" />
@@ -327,7 +354,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764583914887</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="added README.md">
+      <option name="closed" value="true" />
+      <created>1764584480682</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1764584480682</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -346,7 +381,8 @@
     <MESSAGE value="rename pattern.png to checker_board.png" />
     <MESSAGE value="workspace.xml update" />
     <MESSAGE value="fix: resolve distance spike on user rotation and crash on NoneType&#10;&#10;- Implement Multi-Axis Distance Estimation in `facial_tracker.py` and `body_tracker.py` to differentiate between a user moving away (both axes shrink) and rotating (only width shrinks).&#10;- Add vertical axis (torso height/face height) tracking to stabilize depth readings when user turns 90 degrees.&#10;- Fix `TypeError` crash in `get_distance` caused by missing `return` statement in helper function wrappers.&#10;- Update `main.py` to utilize new multi-axis training and distance logic.&#10;- Add visual debug lines (Yellow for Width, Magenta for Height) to the Body Tracker UI." />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: resolve distance spike on user rotation and crash on NoneType&#10;&#10;- Implement Multi-Axis Distance Estimation in `facial_tracker.py` and `body_tracker.py` to differentiate between a user moving away (both axes shrink) and rotating (only width shrinks).&#10;- Add vertical axis (torso height/face height) tracking to stabilize depth readings when user turns 90 degrees.&#10;- Fix `TypeError` crash in `get_distance` caused by missing `return` statement in helper function wrappers.&#10;- Update `main.py` to utilize new multi-axis training and distance logic.&#10;- Add visual debug lines (Yellow for Width, Magenta for Height) to the Body Tracker UI." />
+    <MESSAGE value="added README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="added README.md" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764464637346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
@@ -356,6 +392,6 @@
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1764466457045" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$generate_markers.coverage" NAME="generate_markers Coverage Results" MODIFIED="1763775649113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$facial_tracker.coverage" NAME="facial_tracker Coverage Results" MODIFIED="1763762554978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764584249942" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764587969684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
