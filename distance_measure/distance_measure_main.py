@@ -303,7 +303,7 @@ class Main(object):
             delta = abs(out_x_m - self.last_sent_x) + abs(out_y_m - self.last_sent_y)
 
             if delta > 0.01:
-                print(f"{out_x_m:.4f},{out_y_m:.4f},{yaw_normalized:.4f}", flush=True)
+                print(f"{-out_x_m:.4f},{-out_y_m:.4f},{-yaw_normalized:.4f}", flush=True)
                 self.last_sent_x = out_x_m
                 self.last_sent_y = out_y_m
 
