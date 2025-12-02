@@ -158,25 +158,25 @@ class BodyTracker:
             # --- 3. DRAW CONNECTION LINE (Shoulder Width) ---
             cv2.line(frame, l_shoulder, r_shoulder, (0, 255, 255), 2)
 
-            # # 4. Draw Labeled Points (A = Left/Orange, B = Right/Magenta)
-            # # LEFT SHOULDER (A) -> Orange (BGR: 0, 165, 255)
-            # cv2.circle(frame, l_shoulder, 8, (0, 165, 255), -1)
-            # cv2.putText(frame, "A", (l_shoulder[0] - 5, l_shoulder[1] - 15),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
-            #
-            # # RIGHT SHOULDER (B) -> Magenta (BGR: 255, 0, 255)
-            # cv2.circle(frame, r_shoulder, 8, (255, 0, 255), -1)
-            # cv2.putText(frame, "B", (r_shoulder[0] - 5, r_shoulder[1] - 15),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
-            #
-            # # Debug: Draw "Normal Vector" (Which way is chest facing?)
-            # # We infer this from the cross product of shoulders and spine, but that's complex.
-            # # Simple visual check: Is A left of B?
-            # is_facing_forward = l_shoulder[0] > r_shoulder[0]  # Mirror view logic
-            #
-            # status_text = "BACK" if not is_facing_forward else "FRONT"
-            # cv2.putText(frame, f"SKELETON: {status_text}", (50, height - 120),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+            # 4. Draw Labeled Points (A = Left/Orange, B = Right/Magenta)
+            # LEFT SHOULDER (A) -> Orange (BGR: 0, 165, 255)
+            cv2.circle(frame, l_shoulder, 8, (0, 165, 255), -1)
+            cv2.putText(frame, "A", (l_shoulder[0] - 5, l_shoulder[1] - 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
+
+            # RIGHT SHOULDER (B) -> Magenta (BGR: 255, 0, 255)
+            cv2.circle(frame, r_shoulder, 8, (255, 0, 255), -1)
+            cv2.putText(frame, "B", (r_shoulder[0] - 5, r_shoulder[1] - 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
+
+            # Debug: Draw "Normal Vector" (Which way is chest facing?)
+            # We infer this from the cross product of shoulders and spine, but that's complex.
+            # Simple visual check: Is A left of B?
+            is_facing_forward = l_shoulder[0] > r_shoulder[0]  # Mirror view logic
+
+            status_text = "BACK" if not is_facing_forward else "FRONT"
+            cv2.putText(frame, f"SKELETON: {status_text}", (50, height - 120),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
 
             # 3. Draw "Synthetic Z" Debug info
             # This shows the user if the "Rigid Bar" logic is working
