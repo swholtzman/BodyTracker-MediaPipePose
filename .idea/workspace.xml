@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="better rotation">
-      <change beforePath="$PROJECT_DIR$/distance_measure/body_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/body_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/distance_measure/distance_measure_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/distance_measure_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,33 +44,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.body_tracker.executor": "Run",
-    "Python.facial_tracker.executor": "Run",
-    "Python.fiducial_markers.executor": "Run",
-    "Python.generate_markers.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.mathematics.executor": "Run",
-    "Python.python runner.py.executor": "Run",
-    "Python.runner.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/head_pose_estimation",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "settings.editor.splitter.proportion": "0.38174602",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.body_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.facial_tracker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fiducial_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate_markers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mathematics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.python runner.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/samholtzman/PycharmProjects/BodyTracker-MediaPipePose/head_pose_estimation&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.38174602&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/head_pose_estimation" />
@@ -412,6 +412,6 @@
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1764466457045" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$generate_markers.coverage" NAME="generate_markers Coverage Results" MODIFIED="1763775649113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$facial_tracker.coverage" NAME="facial_tracker Coverage Results" MODIFIED="1763762554978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764648593392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764649431723" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
