@@ -4,7 +4,7 @@ numpy<2
 # Use the last OpenCV version that supports Numpy 1.x
 opencv-python<=4.10.0.84
 
-mediapipe>=0.10.14
+mediapipe>=0.10.21
 cvzone
 stag-python
 pyyaml

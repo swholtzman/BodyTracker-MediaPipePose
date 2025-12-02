@@ -180,16 +180,6 @@ class BodyTracker:
         return landmarks
 
 
-    def train(self, known_distance_cm, width_px, height_px):
-        """
-        Learns the shoulder width ratio.
-        """
-        if width_px > 0:
-            self.focal_ratio_width = known_distance_cm * width_px
-        if height_px > 0:
-            self.focal_ratio_height = known_distance_cm * height_px
-
-
     def get_body_rotation_continuous(self, pose_landmarks):
         """
         Calculates continuous rotation using Vector Delta tracking.
@@ -208,7 +198,10 @@ class BodyTracker:
         # Calculate Shoulder Width (2D plane)
         # When this is small, we are at 90 or 270 degrees (Profile view)
         shoulder_width_2d = abs(l_curr[0] - r_curr[0])
-        CROSSOVER_THRESHOLD = 0.05  # Approx 5% of screen width
+
+        # INCREASED THRESHOLD: 15% of screen width
+        # This catches the flip EARLIER, switching to coasting before the math explodes.
+        CROSSOVER_THRESHOLD = 0.15
 
         if self.prev_shoulders is not None:
             l_prev, r_prev = self.prev_shoulders
@@ -240,14 +233,15 @@ class BodyTracker:
 
             # --- DANGER ZONE LOGIC (Coasting) ---
             if shoulder_width_2d < CROSSOVER_THRESHOLD:
-                # Unstable profile view. Use momentum.
+                # Unstable profile view. Vector math is garbage here.
+                # Use MOMENTUM instead of math.
                 if abs(self.last_valid_delta) > 0.1:
                     # Apply decaying momentum to carry through the turn
-                    coast_delta = self.last_valid_delta * 0.95
+                    coast_delta = self.last_valid_delta * 0.98
                     self.accumulated_yaw -= coast_delta
                     self.last_valid_delta = coast_delta
 
-                # --- SAFE ZONE LOGIC (Normal Tracking) ---
+            # --- SAFE ZONE LOGIC (Normal Tracking) ---
             else:
                 prev_vector = r_prev - l_prev
                 current_vector = r_curr - l_curr
@@ -265,6 +259,16 @@ class BodyTracker:
 
         self.prev_shoulders = (l_curr, r_curr)
         return self.accumulated_yaw
+
+
+    def train(self, known_distance_cm, width_px, height_px):
+        """
+        Learns the shoulder width ratio.
+        """
+        if width_px > 0:
+            self.focal_ratio_width = known_distance_cm * width_px
+        if height_px > 0:
+            self.focal_ratio_height = known_distance_cm * height_px
 
 
     def get_distance(self, width_px, height_px):
