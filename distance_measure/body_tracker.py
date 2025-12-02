@@ -17,8 +17,9 @@ class BodyTracker:
 
         # --- Stateful Rotation Tracking ---
         self.accumulated_yaw = 0.0
-        self.prev_shoulders = None  # Stores (x, z) of left/right from previous frame
-        self.last_valid_delta = 0.0  # Momentum for coasting
+
+        # We need to learn the user's max shoulder width to calculate geometry
+        self.max_shoulder_width_px = 1.0  # Start non-zero to prevent div/0
 
         self.pose = self.mp_pose.Pose(
             min_detection_confidence=self.min_detection_confidence,
@@ -157,107 +158,125 @@ class BodyTracker:
             # --- 3. DRAW CONNECTION LINE (Shoulder Width) ---
             cv2.line(frame, l_shoulder, r_shoulder, (0, 255, 255), 2)
 
-            # 4. Draw Labeled Points (A = Left/Orange, B = Right/Magenta)
-            # LEFT SHOULDER (A) -> Orange (BGR: 0, 165, 255)
-            cv2.circle(frame, l_shoulder, 8, (0, 165, 255), -1)
-            cv2.putText(frame, "A", (l_shoulder[0] - 5, l_shoulder[1] - 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
+            # # 4. Draw Labeled Points (A = Left/Orange, B = Right/Magenta)
+            # # LEFT SHOULDER (A) -> Orange (BGR: 0, 165, 255)
+            # cv2.circle(frame, l_shoulder, 8, (0, 165, 255), -1)
+            # cv2.putText(frame, "A", (l_shoulder[0] - 5, l_shoulder[1] - 15),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
+            #
+            # # RIGHT SHOULDER (B) -> Magenta (BGR: 255, 0, 255)
+            # cv2.circle(frame, r_shoulder, 8, (255, 0, 255), -1)
+            # cv2.putText(frame, "B", (r_shoulder[0] - 5, r_shoulder[1] - 15),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
+            #
+            # # Debug: Draw "Normal Vector" (Which way is chest facing?)
+            # # We infer this from the cross product of shoulders and spine, but that's complex.
+            # # Simple visual check: Is A left of B?
+            # is_facing_forward = l_shoulder[0] > r_shoulder[0]  # Mirror view logic
+            #
+            # status_text = "BACK" if not is_facing_forward else "FRONT"
+            # cv2.putText(frame, f"SKELETON: {status_text}", (50, height - 120),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
 
-            # RIGHT SHOULDER (B) -> Magenta (BGR: 255, 0, 255)
-            cv2.circle(frame, r_shoulder, 8, (255, 0, 255), -1)
-            cv2.putText(frame, "B", (r_shoulder[0] - 5, r_shoulder[1] - 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
+            # 3. Draw "Synthetic Z" Debug info
+            # This shows the user if the "Rigid Bar" logic is working
+            mid_x = (l_shoulder[0] + r_shoulder[0]) // 2
+            mid_y = (l_shoulder[1] + r_shoulder[1]) // 2
 
-            # Debug: Draw "Normal Vector" (Which way is chest facing?)
-            # We infer this from the cross product of shoulders and spine, but that's complex.
-            # Simple visual check: Is A left of B?
-            is_facing_forward = l_shoulder[0] > r_shoulder[0]  # Mirror view logic
-
-            status_text = "BACK" if not is_facing_forward else "FRONT"
-            cv2.putText(frame, f"SKELETON: {status_text}", (50, height - 120),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+            # Visualize the calculated "facing" direction
+            # This is purely visual, derived from the same logic as get_body_rotation
+            dx = r_shoulder[0] - l_shoulder[0]
+            if self.max_shoulder_width_px > 10:
+                # Simple visual projection
+                scale_factor = 100
+                cv2.arrowedLine(frame, (mid_x, mid_y), (mid_x + int(dx / self.max_shoulder_width_px * 50), mid_y),
+                                (0, 0, 255), 2)
 
         return landmarks
 
-
     def get_body_rotation_continuous(self, pose_landmarks):
         """
-        Calculates continuous rotation using Vector Delta tracking.
-        This method is robust to the "Singularity" (90-degree turn) by detecting
-        vector direction flips.
+        Calculates absolute rotation using Geometric Constraint (Synthetic Z).
+        Returns angle in degrees (-180 to 180).
         """
         if not pose_landmarks:
             return self.accumulated_yaw
 
         lm = pose_landmarks.landmark
 
-        # High Z-Sensitivity for rotation responsiveness
-        l_curr = np.array([lm[11].x, lm[11].z * 3.5])
-        r_curr = np.array([lm[12].x, lm[12].z * 3.5])
+        # 1. Get Shoulder X Coordinates (Normalized 0.0 - 1.0)
+        lx = lm[11].x
+        rx = lm[12].x
 
-        # Calculate Shoulder Width (2D plane)
-        # When this is small, we are at 90 or 270 degrees (Profile view)
-        shoulder_width_2d = abs(l_curr[0] - r_curr[0])
+        # 2. Get Raw Z to determine "Quadrant" (Front vs Back)
+        # We don't trust the magnitude, but we trust the sign.
+        # If Left Shoulder Z < Right Shoulder Z, Left is closer to camera.
+        lz_raw = lm[11].z
+        rz_raw = lm[12].z
+        left_is_closer = lz_raw < rz_raw
 
-        # INCREASED THRESHOLD: 15% of screen width
-        # This catches the flip EARLIER, switching to coasting before the math explodes.
-        CROSSOVER_THRESHOLD = 0.15
+        # 3. Calculate Horizontal Projection (dx)
+        # Note: If facing camera (0 deg), Left is on Right of screen (mirror) or Left?
+        # Standard: x increases left-to-right on screen.
+        # If facing camera: Left Shoulder is at higher X than Right Shoulder.
+        dx = lx - rx
 
-        if self.prev_shoulders is not None:
-            l_prev, r_prev = self.prev_shoulders
+        # 4. Auto-Calibrate Max Width (The "Rigid Bar" Length)
+        # We track the maximum width seen to define the radius of the turn.
+        current_width = abs(dx)
+        # Slowly decay max width to adapt to user moving further away (Z-depth change)
+        self.max_shoulder_width_px = max(self.max_shoulder_width_px * 0.999, current_width)
 
-            # --- CALCULATE ROTATION DELTA ---
-            # We use the 2D projected change of the shoulder bar length and orientation.
-            # Ideally, we'd use atan2(dz, dx), but since we lack reliable Z,
-            # we infer rotation from the change in the 2D projection.
+        # Safety clamp to prevent math domain errors
+        if self.max_shoulder_width_px < 0.001:
+            return self.accumulated_yaw
 
-            # Simplified Logic:
-            # The shoulder bar is a rigid rod.
-            # If 'dx' gets smaller, we are turning away from 0 or 180.
-            # The SIGN of the change tells us the direction.
+        # 5. Calculate "Synthetic Z" (The missing depth)
+        # Pythagorean theorem: dx^2 + dz^2 = max_width^2
+        # So: dz = sqrt(max_width^2 - dx^2)
 
-            # 1. Calculate the 'Heading' of the shoulder vector in 2D space
-            #    This isn't user yaw, this is just the tilt of shoulders on screen.
-            #    However, we can treat the change in this 2D projection as a proxy for yaw
-            #    when combined with state.
+        ratio = current_width / self.max_shoulder_width_px
+        ratio = min(ratio, 1.0)  # Clamp to 1.0
 
-            # BETTER APPROACH: "Virtual Z"
-            # We assume shoulder width is constant (let's say 1.0 unit).
-            # The observed width 'w' is cos(yaw).
-            # So yaw = acos(w).
-            # This gives us absolute rotation (0-90), but not direction or quadrant.
-            # We use the accumulated_yaw to know which quadrant we are in.
+        # This gives us the magnitude of the Z component
+        synthetic_dz_mag = math.sqrt(1.0 - ratio ** 2)
 
-            # ... But that is complex. Let's stick to the trusted method:
-            # Just track the 2D Vector Delta, but filter out the "Flip".
+        # 6. Determine Direction (Sign of Z) using raw data
+        # If left is closer, we are rotated one way. If right is closer, the other.
+        # The logic below aligns the Synthetic Z with the Raw Z sign.
+        sign = 1 if left_is_closer else -1
+        synthetic_dz = synthetic_dz_mag * sign
 
-            # --- DANGER ZONE LOGIC (Coasting) ---
-            if shoulder_width_2d < CROSSOVER_THRESHOLD:
-                # Unstable profile view. Vector math is garbage here.
-                # Use MOMENTUM instead of math.
-                if abs(self.last_valid_delta) > 0.1:
-                    # Apply decaying momentum to carry through the turn
-                    coast_delta = self.last_valid_delta * 0.98
-                    self.accumulated_yaw -= coast_delta
-                    self.last_valid_delta = coast_delta
+        # 7. Calculate Angle
+        # We use atan2(dz, dx) to get the full 360 rotation
+        # dx is Cosine component, dz is Sine component
+        angle_rad = math.atan2(synthetic_dz, ratio if dx > 0 else -ratio)
+        angle_deg = math.degrees(angle_rad)
 
-            # --- SAFE ZONE LOGIC (Normal Tracking) ---
-            else:
-                prev_vector = r_prev - l_prev
-                current_vector = r_curr - l_curr
+        # 8. Align Coordinates
+        # 0 degrees should be "Facing Camera".
+        # When facing camera: dx is Max, dz is 0.
+        # atan2(0, 1) = 0. Correct.
 
-                # Cross Product for signed rotation
-                cross_prod = prev_vector[0] * current_vector[1] - prev_vector[1] * current_vector[0]
-                dot_prod = np.dot(prev_vector, current_vector)
+        # 9. Handle Quadrants for 360 tracking
+        # The geometric math above naturally handles 0-180 and 0 to -180.
+        # However, we need to correct for the "Backwards" case.
+        # If we are facing away, dx flips.
 
-                delta_deg = math.degrees(math.atan2(cross_prod, dot_prod))
+        # Simplified robust check:
+        # Just use the raw dx and the signed synthetic_dz.
+        # We normalize dx by max_width to treat it as a unit circle.
 
-                # Sanity Filter
-                if abs(delta_deg) < 30.0:
-                    self.accumulated_yaw -= delta_deg
-                    self.last_valid_delta = delta_deg  # Save momentum
+        norm_dx = dx / self.max_shoulder_width_px
 
-        self.prev_shoulders = (l_curr, r_curr)
+        # Final Angle Calculation
+        final_angle = math.degrees(math.atan2(synthetic_dz, norm_dx))
+
+        # Refine Orientation offset (-90 shift usually needed for compass)
+        # Based on standard usage: 0 = Up/Camera.
+        # Our math gives 0 when dx is max positive.
+        self.accumulated_yaw = final_angle
+
         return self.accumulated_yaw
 
 

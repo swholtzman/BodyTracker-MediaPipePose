@@ -274,19 +274,27 @@ class Main(object):
             body_continuous_yaw = self.body_tracker.get_body_rotation_continuous(pose_landmarks)
 
             # --- 4. YAW SELECTION LOGIC ---
+            body_yaw_abs = self.body_tracker.get_body_rotation_continuous(pose_landmarks)
+
             target_yaw = self.smoothed_yaw if hasattr(self, 'smoothed_yaw') else 0
 
             if hpe_success:
                 # Priority 1: Head Pose (The Truth)
                 target_yaw = hpe_yaw
 
-                # Sync Body Tracker to Head (Prevent Drift)
-                # But only if the Head isn't a "Teleporting Glitch" (handled by clamp below)
-                self.body_tracker.accumulated_yaw = hpe_yaw
+                # SYNC: Force body tracker to accept this as the new calibration
+                # This fixes "jumps" when switching back to body later
+                # We update the internal accumulator of the main loop,
+                #   but for the geometric body tracker, it calculates per-frame,
+                #   so no internal sync needed there.
+                pass
 
             elif pose_landmarks:
-                # Priority 2: Body Continuous (Fallback)
-                target_yaw = body_continuous_yaw
+                # Priority 2: Body Geometric (Fallback)
+                # Since body_yaw_abs wraps at 180/-180, we need to unwrap it
+                #   to match the continuous nature of your system if you want >360 spins.
+                # However, the current system handles module 360 later.
+                target_yaw = body_yaw_abs
 
             else:
                 # Priority 3: Keep Last Known

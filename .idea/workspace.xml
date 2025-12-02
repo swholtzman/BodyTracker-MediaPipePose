@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="added a better rotational model&#10;added more guards against crashes">
+    <list default="true" id="0edc5b66-b6ce-496f-89e9-81b0d66a612f" name="Changes" comment="better rotation">
       <change beforePath="$PROJECT_DIR$/distance_measure/body_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/body_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distance_measure/distance_measure_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/distance_measure/distance_measure_main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -215,7 +215,7 @@
       <workItem from="1764455414540" duration="13856000" />
       <workItem from="1764581473078" duration="1875000" />
       <workItem from="1764583375933" duration="1711000" />
-      <workItem from="1764586022085" duration="21858000" />
+      <workItem from="1764586022085" duration="22571000" />
     </task>
     <task id="LOCAL-00001" summary="Completed fiducial_markers.py functionality (untested)&#10;&#10;Initial construction of facial_tracker.py and body_tracker.py (need rework)">
       <option name="closed" value="true" />
@@ -369,7 +369,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764646436835</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="better rotation">
+      <option name="closed" value="true" />
+      <created>1764648085424</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1764648085424</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -393,18 +401,8 @@
     <MESSAGE value="fixed README.md as the installation for requirements.txt was flawed" />
     <MESSAGE value="removed unnecessary comment from requirements.txt" />
     <MESSAGE value="added a better rotational model&#10;added more guards against crashes" />
-    <option name="LAST_COMMIT_MESSAGE" value="added a better rotational model&#10;added more guards against crashes" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/distance_measure/body_tracker.py</url>
-          <line>15</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="better rotation" />
+    <option name="LAST_COMMIT_MESSAGE" value="better rotation" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$main.coverage" NAME="main Coverage Results" MODIFIED="1764464637346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
@@ -414,6 +412,6 @@
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$fiducial_markers.coverage" NAME="fiducial_markers Coverage Results" MODIFIED="1764466457045" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/distance_measure" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$generate_markers.coverage" NAME="generate_markers Coverage Results" MODIFIED="1763775649113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$facial_tracker.coverage" NAME="facial_tracker Coverage Results" MODIFIED="1763762554978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764647361524" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BodyTracker_MediaPipePose$python_runner_py.coverage" NAME="python runner.py Coverage Results" MODIFIED="1764648593392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
