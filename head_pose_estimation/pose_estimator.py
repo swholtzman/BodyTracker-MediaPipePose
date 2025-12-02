@@ -46,8 +46,8 @@ class HeadPoseEstimator:
             static_image_mode=False,  # Set False for video stream optimization
             max_num_faces=1,
             refine_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
+            min_detection_confidence=0.6, # Tracking "confidence" threshold
+            min_tracking_confidence=0.6
         )
 
         self.yaw_smoothed = 0.0
@@ -62,9 +62,10 @@ class HeadPoseEstimator:
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.face_mesh.process(rgb_frame)
 
+        # If no face detected, return False flag
         if not results.multi_face_landmarks:
             # Return original frame and last known smoothed values
-            return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed
+            return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed, False
 
         for landmarks in results.multi_face_landmarks:
             # Extract features for the PyTorch model
@@ -72,7 +73,7 @@ class HeadPoseEstimator:
                 self.face_mesh, frame, normalize=True, isPil=False)
 
             if (input_landmarks == 0).all():
-                return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed
+                return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed, False
 
             input_landmarks = input_landmarks.unsqueeze(dim=0).to(self.device)
 
@@ -93,48 +94,10 @@ class HeadPoseEstimator:
                 self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed
             )
 
-        return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed
+        # Return True for success
+        return frame, self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed, True
 
-    # def draw_pose(self, frame):
-    #     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #     results = self.face_mesh.process(rgb_frame)
-    #
-    #     if not results.multi_face_landmarks:
-    #         return frame  # No face found
-    #
-    #     for landmarks in results.multi_face_landmarks:
-    #         input_landmarks = FE.get_feature_vector_from_image(
-    #             self.face_mesh, frame, normalize=True, isPil=False)
-    #
-    #         if (input_landmarks == 0).all():
-    #             return frame  # Invalid
-    #
-    #         input_landmarks = input_landmarks.unsqueeze(dim=0).to(self.device)
-    #
-    #         with torch.no_grad():
-    #             predictions = self.model(input_landmarks)
-    #             yaw, pitch, roll = map(lambda x: round(np.degrees(x.item()), 2), predictions)
-    #
-    #         # Exponential smoothing
-    #         if self.yaw_smoothed is None:
-    #             self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed = yaw, pitch, roll
-    #         else:
-    #             self.yaw_smoothed = self.alpha * yaw + (1 - self.alpha) * self.yaw_smoothed
-    #             self.pitch_smoothed = self.alpha * pitch + (1 - self.alpha) * self.pitch_smoothed
-    #             self.roll_smoothed = self.alpha * roll + (1 - self.alpha) * self.roll_smoothed
-    #
-    #         yaw, pitch, roll = self.yaw_smoothed, self.pitch_smoothed, self.roll_smoothed
-    #
-    #         frame, self.prev_tdx, self.prev_tdy = visualize_axes_on_face(
-    #             self.prev_tdx, self.prev_tdy, self.MAX_CENTER_JUMP, frame, landmarks.landmark, yaw, pitch, roll)
-    #
-    #         # Add text
-    #         cv2.putText(frame, f"Yaw: {yaw:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    #         cv2.putText(frame, f"Pitch: {pitch:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    #         cv2.putText(frame, f"Roll: {roll:.2f}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    #
-    #     return frame
-    #
+
 def visualize_axes_on_face(prev_tdx, prev_tdy, MAX_CENTER_JUMP, frame, landmarks, yaw, pitch, roll, size=80):
     # Convert back to radians for drawing geometry
     pitch = pitch * np.pi / 180

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Any
 
@@ -129,31 +131,51 @@ class FiducialMarker(object):
         """
         frame_dict = {}
 
-        # 1. Convert to Grayscale (STag requires 1 channel)
-        if len(frame.shape) == 3:
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        else:
-            gray_frame = frame
+        # 1. Force a DEEP COPY to ensure we own this memory
+        #    This prevents issues if 'frame' is a slice or view from another library
+        safe_frame = frame.copy()
 
-        # --- SAFETY PADDING ---
-        # The STag library (C++) crashes (SIGSEGV) if edge detection hits the
-        #   exact memory boundary of the image.
-        #   Add a 10px black border so the algorithm hits "safe" pixels
-        #       instead of invalid memory.
-        padding = 10
+        # 2. Convert to Grayscale (STag requires 1 channel)
+        if len(safe_frame.shape) == 3:
+            gray_frame = cv2.cvtColor(safe_frame, cv2.COLOR_BGR2GRAY)
+        else:
+            gray_frame = safe_frame
+
+        # --- AVOID SIGSEGV CRASH ---
+        # High-res images cause STag's internal buffers to overflow (JoinAnchorPoints crash).
+        #   Resize the image to a safe resolution (e.g., max width 640 or 800)
+        #       and then scale the resulting corner coordinates back up.
+        height, width = gray_frame.shape
+        MAX_WIDTH = 800  # Safe resolution for STag
+
+        scale_factor = 1.0
+        processing_frame = gray_frame
+
+        if width > MAX_WIDTH:
+            scale_factor = MAX_WIDTH / width
+            new_height = int(height * scale_factor)
+            processing_frame = cv2.resize(gray_frame, (MAX_WIDTH, new_height))
+
+        # 3. Add Padding (The secondary crash fix)
+        # --- SAFETY PADDING & MEMORY PACKING ---
+        # The STag C++ library has a known bug where edge detection reads out of bounds.
+        # We solve this by:
+        # A) Adding a 16px black border so "out of bounds" is just valid black pixels.
+        # B) Forcing 'ascontiguousarray' to ensure no memory gaps exist.
+        padding = 16
         padded_frame = cv2.copyMakeBorder(
-            gray_frame,
+            processing_frame,
             padding, padding, padding, padding,
             cv2.BORDER_CONSTANT,
             value=0
         )
 
-        # 2. Force Contiguous Memory (C++ requires strict memory layout)
-        # This prevents the SIGSEGV (Exit Code 139)
-        safe_frame = np.ascontiguousarray(padded_frame)
+        # 4. Force contiguous memory layout (The Anti-Crash Shield)
+        #    We do this on the PADDED frame immediately before passing to C++
+        contiguous_padded_frame = np.ascontiguousarray(padded_frame)
 
-        # 3. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
-        # ArUco default corner order: TL, TR, BR, BL
+        # 5. Define the 3D world coordinates of the marker corners (Clockwise from Top-Left)
+        #   STag default corner order: TL, TR, BR, BL
         top_left_point = (0, 0, 0)
         top_right_point = (self.marker_size, 0, 0)
         bottom_right_point = (self.marker_size, self.marker_size, 0)
@@ -164,9 +186,13 @@ class FiducialMarker(object):
             dtype=np.float32
         )
 
-        # 4. Detect Markers using STag
+        # 6. Detect Markers using STag
         try:
-            corners, ids, rejected = stag.detectMarkers(image=safe_frame, libraryHD=self.libraryHD)
+            # PASS THE CONTIGUOUS PADDED FRAME
+            corners, ids, rejected = stag.detectMarkers(
+                image=contiguous_padded_frame,
+                libraryHD=self.libraryHD
+            )
         except Exception as e:
             print(f"STag Error: {e}")
             return frame_dict
@@ -183,11 +209,16 @@ class FiducialMarker(object):
                 if current_corners.shape == (1, 4, 2):
                     current_corners = current_corners.reshape(4, 2)
 
-                # --- CRITICAL FIX: REMOVE PADDING OFFSET ---
-                # Detected on a padded image: coordinates shifted by (10, 10)
-                #   Subtract the padding to get real coordinates.
+                # --- REMOVE PADDING OFFSET ---
+                # 1. Remove Padding
+                #   Since we detected on a padded image, coordinates are shifted by +10.
+                #   We subtract 10 to map back to the original image space.
                 current_corners[:, 0] -= padding  # X
                 current_corners[:, 1] -= padding  # Y
+
+                # 2. Reverse Scaling (Map back to original high-res coordinates)
+                current_corners[:, 0] /= scale_factor
+                current_corners[:, 1] /= scale_factor
 
                 # Solve Perspective-n-Point to find pose
                 success, rvec, tvec = cv2.solvePnP(
